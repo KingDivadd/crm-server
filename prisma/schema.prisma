@@ -1,0 +1,566 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+ 
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Company {
+  company_id                              String           @id @default(uuid()) @unique
+  company_name                            String           
+  company_address                         String?
+  company_phone                           Json             @default("[]")
+  organization_size                       Int              @default(value: 0)
+  number_of_admin                         Int              @default(value: 0)
+  company_logo                            String?   
+
+  user                                    User[]
+
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model User {
+  user_id                                 String           @id @default(uuid()) @unique
+
+  // Basic user info
+  last_name                               String           @default(value: "")
+  first_name                              String           @default(value: "")
+  other_names                             String           @default(value: "")
+  user_role                               String
+  password                                String           
+  email                                   String           @unique
+  country_code                            String?          @default(value: "")
+  phone_number                            String?          @default(value: "")
+  is_verified                             Boolean          @default(false)
+  active_status                           Boolean          @default(true)
+  avatar                                  String?          @default(value: "")
+
+  // company information
+  company                                 Company?         @relation(fields: [company_id], references: [company_id])
+  company_id                              String?
+  leads                                   Lead[]
+  sales                                   Sale[]
+  installations                           Installation[]
+  activities                              Activity[]
+  notifications                           Notification[]
+  designers                               Designer[]
+  payroll                                 Payroll[]
+  service_ticket                          Service_Ticket[]
+  task_notifications                      Task_Notification[]
+
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Lead {
+  lead_id                                 String           @id @default(uuid()) @unique
+  customer_name                           String?
+  address                                 String?
+  phone_number                            String?
+  user                                    User?       @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+  gate_code                               String
+  appo_stringment_date                    String
+  disposition                             Disposition
+  job                                     Job[]
+  sales                                   Sale[]
+  designer                                Designer[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Disposition {
+  SOLD
+  NOT_SOLD
+}
+
+model Sale {
+  sale_id                                 String           @id @default(uuid()) @unique
+
+  lead                                    Lead?       @relation(fields: [lead_id], references: [lead_id])
+  lead_id                                 String?
+
+  user                                    User?       @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+  
+  designer                                Designer?       @relation(fields: [designer_id], references: [designer_id])
+  designer_id                             String?
+
+  sale_status                             Sale_Status     @default(PENDING)
+
+  job_number                              String
+  contract_amount                         Float
+  contract_date                           String
+  email                                   String
+  hoa                                     Boolean
+  hoa_sent_date                           String?
+  hoa_approved_date                       String?
+  project                                 Project[]
+  notifications                           Notification[]
+  payments                                Payment[]
+  invoice                                 Invoice[]
+  engineering                             Engineering[]
+  accounting                              Accounting[]
+  permit                                  Permit[]
+  job                                     Job[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+
+enum Sale_Status{
+  PENDING
+  COMPLETED
+  CANCELED
+}
+
+enum Structure_Type {
+  IRP
+  LATTICE
+  COMBO
+  FLAT_PAN
+  LOUVER
+  HYBRID
+}
+
+
+model Installation {
+  installation_id                         String           @id @default(uuid()) @unique
+
+  job                                     Job?        @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+  user                                    User?        @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+
+  installation_status                     Installation_Status     @default(PENDING)
+
+  footings_date                           String?
+  footings_crew                           String?
+  footings_bill_sheet                     String?  // or any appropriate type
+  set_post_date                           String?
+  set_post_crew                           String?
+  set_post_bill_sheet                     String?  // or any appropriate type
+  demo_date                               String?
+  demo_crew                               String?
+  demo_bill_sheet                         String?  // or any appropriate type
+  install_date                            String?
+  install_crew                            String?
+  install_bill_sheet                      String?  // or any appropriate type
+  electrical_date                         String?
+  electrical_crew                         String?
+  electrical_bill_sheet                   String?  // or any appropriate type
+  inspections                             Inspection[]
+  materials                               Material[]
+  bill_sheets                             Bill_Sheet[]
+  notifications                           Notification[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Installation_Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+
+model Inspection {
+  inspection_id                           String           @id @default(uuid()) @unique
+  date                                    String
+  pass                                    Boolean
+
+  installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
+  installation_id                         String?
+
+  permit                                  Permit?      @relation(fields: [permit_id], references: [permit_id])
+  permit_id                               String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Material {
+  material_id                             String           @id @default(uuid()) @unique
+  description                             String
+  cost                                    Float
+  received_date                           String?
+  delivered_to_customer_date              String?
+
+  installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
+  installation_id                         String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Bill_Sheet {
+  bill_sheet_id                           String           @id @default(uuid()) @unique
+  description                             String
+  cost                                    Float
+  installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
+  installation_id                         String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Payment {
+  payment_id                              String           @id @default(uuid()) @unique
+  phase                                   Payment_Phase
+  amount                                  Float
+  date                                    String
+  payment_status                          Payment_Status     @default(PENDING)
+  
+  job                                     Job?       @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+  sale                                    Sale?      @relation(fields: [sale_id], references: [sale_id])
+  sale_id                                 String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Payment_Phase {
+  DEPOSIT
+  SCHEDULING
+  DELIVERY
+  CONSTRUCTION_COMPLETION
+  ELECTRICAL_COMPLETION
+}
+
+enum Payment_Status {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+model Invoice {
+  invoice_id                              String           @id @default(uuid()) @unique
+  vendor                                  Vendor
+  amount                                  Float
+  date                                    String
+  job_number                              String
+  receipt                                 String
+
+  job                                     Job?       @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+  sale                                    Sale?      @relation(fields: [sale_id], references: [sale_id])
+  sale_id                                 String?
+
+  accounting                              Accounting?      @relation(fields: [accounting_id], references: [accounting_id])
+  accounting_id                           String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Vendor {
+  DURALUM
+  FOUR_K
+  JS_SERVICES
+  OTHER
+}
+
+model Designer {
+  designer_id                             String           @id @default(uuid()) @unique
+
+  user                                    User?       @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+
+
+  lead                                    Lead?       @relation(fields: [lead_id], references: [lead_id])
+  lead_id                                 String?
+
+  
+  sales                                   Sale[]
+  notifications                           Notification[]
+  contract_docs                           Contract_Doc[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Contract_Doc {
+  contract_doc_id                         String           @id @default(uuid()) @unique
+  file_path                               String
+
+  designer                                Designer?     @relation(fields: [designer_id], references: [designer_id])
+  designer_id                             String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Notification {
+  notification_id                         String           @id @default(uuid()) @unique
+  message                                 String
+  read                                    Boolean  @default(false)
+
+  user                                    User?     @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+
+  sale                                    Sale?     @relation(fields: [sale_id], references: [sale_id])
+  sale_id                                 String?
+
+  designer                                Designer?     @relation(fields: [designer_id], references: [designer_id])
+  designer_id                             String?
+
+  installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
+  installation_id                         String?
+
+  engineering                             Engineering?      @relation(fields: [engineering_id], references: [engineering_id])
+  engineering_id                          String?
+
+  permit                                  Permit?      @relation(fields: [permit_id], references: [permit_id])
+  permit_id                               String?
+
+  job                                     Job?       @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Task_Notification {
+  task_notification_id                    String           @id @default(uuid()) @unique
+  message                                 String?
+  read                                    Boolean          @default(false)
+  task_type                               Task_Type
+  due_date                                DateTime?
+  task_notification_status                Task_Notification_Status
+
+  user                                    User?            @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+
+  job                                     Job?             @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Task_Notification_Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+enum Task_Type {
+  HOA_APPROVAL
+  ENGINEERING_APPROVAL
+  PERMIT_APPROVAL
+  INSTALLATION_SCHEDULE
+  PAYMENT_DUE
+}
+
+
+model Engineering {
+  engineering_id                          String           @id @default(uuid()) @unique
+
+  sale                                    Sale?       @relation(fields: [sale_id], references: [sale_id])
+  sale_id                                 String?
+
+  job                                     Job?       @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+  engineering_status                      Engineering_Status     @default(PENDING)
+
+  submitted_date                          String?
+  received_date                           String?
+  cost                                    Float?
+  notifications                           Notification[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Engineering_Status {
+  SUBMITTED
+  APPROVED
+  NOT_APPROVED
+  NOT_REQUIRED
+  PENDING
+  COMPLETED
+
+}
+
+model Permit {
+  permit_id                               String           @id @default(uuid()) @unique
+
+  sale                                    Sale?       @relation(fields: [sale_id], references: [sale_id])
+  sale_id                                 String?
+
+  job                                     Job?       @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+  permit_status                           Permit_Status     @default(PENDING)
+  sent_date                               String?
+  approved_date                           String?
+  permit_number                           String?
+  cost                                    Float?
+  notifications                           Notification[]
+  inspections                             Inspection[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Permit_Status {
+  PENDING
+  APPROVED
+  REJECTED
+  SUBMITTED
+}
+
+model Accounting {
+  accounting_id                           String           @id @default(uuid()) @unique
+
+  project                                 Sale?       @relation(fields: [sale_id], references: [sale_id])
+  sale_id                                 String?
+  profit_loss                             Float
+  average_cost                            Float
+  profit_margins                          Float
+  losses                                  Float
+  bills                                   Bill[]
+  invoices                                Invoice[]
+  payrolls                                Payroll[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Bill {
+  id                                      String           @id @default(uuid()) @unique
+  description                             String
+  amount                                  Float
+  date                                    String
+
+  accounting                              Accounting?      @relation(fields: [accounting_id], references: [accounting_id])
+  accounting_id                           String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Payroll {
+  payroll_id                              String           @id @default(uuid()) @unique
+  description                             String
+  amount                                  Float
+  date                                    String
+
+  user                                    User?     @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+
+  accounting                              Accounting?      @relation(fields: [accounting_id], references: [accounting_id])
+  accounting_id                           String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Service_Ticket {
+  service_ticket_id                       String           @id @default(uuid()) @unique
+  description                             String
+  status                                  Service_Ticket_Status @default(OPEN)
+
+  user                                    User?     @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Service_Ticket_Status {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+model Activity {
+  activity_id                             String           @id @default(uuid()) @unique
+  user                                    User?     @relation(fields: [user_id], references: [user_id])
+  user_id                                 String?
+  action                                  String
+  details                                 String
+
+  job                                     Job?       @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Job {
+  job_id                                  String      @id @default(uuid()) @unique
+
+  lead                                    Lead?       @relation(fields: [lead_id], references: [lead_id])
+  lead_id                                 String?
+
+  sale                                    Sale?      @relation(fields: [sale_id], references: [sale_id])
+  sale_id                                 String?
+
+  job_number                              String
+  contract_amount                         Float
+  contract_date                           String
+  email                                   String
+  hoa                                     Boolean
+  hoa_sent_date                           String?
+  hoa_approved_date                       String?
+  engineering                             Engineering[]
+  permit                                  Permit[]
+  project                                 Project[]
+  payments                                Payment[]
+  invoices                                Invoice[]
+  activities                              Activity[]
+  notifications                           Notification[]
+  installations                           Installation[]
+  task_notifications                      Task_Notification[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Project {
+  project_id                              String      @id @default(uuid()) @unique
+
+  job                                     Job?        @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+
+  sale                                    Sale?        @relation(fields: [sale_id], references: [sale_id])
+  sale_id                                 String?
+
+  attached                                Boolean
+  structure_type                          StructureType
+  cover_size                              String
+  end_cap_style                           String
+  cover_color                             String
+  trim_color                              String
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum StructureType {
+  IRP
+  LATTICE
+  COMBO
+  FLAT_PAN
+  LOUVER
+  HYBRID
+}
