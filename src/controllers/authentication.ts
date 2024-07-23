@@ -11,7 +11,7 @@ const bcrypt = require('bcrypt')
 
 
 export const admin_signup = async(req:Request, res: Response, next: NextFunction)=>{
-    const {last_name, first_name, email, password} = req.body
+    const {last_name, first_name, email, password, phone_number} = req.body
 
     try {
 
@@ -19,7 +19,7 @@ export const admin_signup = async(req:Request, res: Response, next: NextFunction
 
         const staff = await prisma.user.create({
             data: {
-                first_name, last_name, email, password: encrypted_password, user_role: 'super_admin',
+                first_name, last_name, email, password: encrypted_password, user_role: 'admin', phone_number,
 
                 created_at: converted_datetime(),
                 updated_at: converted_datetime(),
