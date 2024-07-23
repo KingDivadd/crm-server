@@ -177,6 +177,10 @@ export const get_user_info = async(req: CustomRequest, res: Response, next: Next
 
         const user = await prisma.user.findUnique({where: {user_id}})
 
+        if (!user){
+            return res.status(404).json({err: 'User not found'})
+        }
+
         return res.status(200).json({msg: 'User data', user: user})
     } catch (err: any) {
         console.log('Errror getting user data ', err);
@@ -207,6 +211,7 @@ export const resend_otp = async(req: CustomRequest, res: Response, next: NextFun
 export const verify_user_otp = async (req: CustomRequest, res: Response, next: NextFunction) => {
     const {otp, email} = req.body
     try {
+
         
         const user = await prisma.user.update({ where: {email}, data: {is_verified: true, updated_at: converted_datetime()}})
 
