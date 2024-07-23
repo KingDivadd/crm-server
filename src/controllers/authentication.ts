@@ -309,7 +309,7 @@ export const logged_in_admin = async(req: CustomRequest, res: Response, next: Ne
             accounting: accounting,
 
             total_number_of_task_notification: number_of_activities,
-            total_number_oftask_notifications_pages: number_of_notification_pages,
+            total_number_of_task_notifications_pages: number_of_notification_pages,
             task_notification: task_notification,
 
         })
