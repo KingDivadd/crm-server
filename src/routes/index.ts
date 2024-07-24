@@ -50,7 +50,7 @@ router.route('/logged-in-admin/:page_number/:notification_page_number').get(veri
 
 // User Management For Admin role alone
 
-router.route('/all-users').get(verify_auth_id, all_users )
+router.route('/all-users/:page_number').get(verify_auth_id, all_users )
 
 router.route('/filter-users/:page_number').get(verify_auth_id, filter_users )
 

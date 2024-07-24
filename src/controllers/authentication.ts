@@ -269,7 +269,7 @@ export const logged_in_admin = async(req: CustomRequest, res: Response, next: Ne
             prisma.project.findMany({}),
 
             prisma.activity.count({}),
-            prisma.activity.findMany({ skip: (Math.abs(Number(page_number)) - 1) * 10, take: 10, orderBy: { created_at: 'desc'  } }),
+            prisma.activity.findMany({ skip: (Math.abs(Number(page_number)) - 1) * 10, take: 10, include: {user: true}, orderBy: { created_at: 'desc'  } }),
 
             prisma.service_Ticket.findMany({}),
             prisma.payment.findMany({}),
@@ -278,7 +278,7 @@ export const logged_in_admin = async(req: CustomRequest, res: Response, next: Ne
             prisma.accounting.findMany({}),
 
             prisma.task_Notification.count({}),
-            prisma.task_Notification.findMany({ skip: (Math.abs(Number(notification_page_number)) - 1) * 10, take: 10, orderBy: { created_at: 'desc'  } }),
+            prisma.task_Notification.findMany({ skip: (Math.abs(Number(notification_page_number)) - 1) * 10, include: {user: true}, take: 10, orderBy: { created_at: 'desc'  } }),
 
             
         ])
