@@ -142,7 +142,6 @@ export const create_user_validation = async (req: Request, res: Response, next: 
             first_name: Joi.string().trim().required(),
             email: Joi.string().trim().email().required(),
             phone_number: Joi.string().trim().optional().allow(''),
-            country_code: Joi.string().trim().required(),
             password: Joi.string().trim().required(),
             user_role: Joi.string().trim().required()
         })
