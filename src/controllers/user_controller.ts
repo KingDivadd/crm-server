@@ -103,7 +103,7 @@ export const admin_delete_user_data = async(req: CustomRequest, res: Response, n
 
 
 
-        const updated_user_data = await prisma.user.delete({  where: {user_id: req.body.user_id },  })
+        const updated_user_data = await prisma.user.delete({  where: {user_id },  })
 
         // now we are going to delete casecade...
 
