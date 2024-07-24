@@ -72,6 +72,8 @@ export const admin_change_user_data = async(req: CustomRequest, res: Response, n
         if (user?.user_role === 'admin' && req.user.user_id !== user.user_id) {return res.status(401).json({err: `Not authorized to edit data`})}
 
 
+        req.body.password = await bcrypt.hash(req.body.password, salt_round);
+
         const updated_user_data = await prisma.user.update({ 
             where: {user_id }, 
             data: {...req.body, updated_at: converted_datetime()}
