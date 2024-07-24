@@ -95,13 +95,13 @@ export const admin_delete_user_data = async(req: CustomRequest, res: Response, n
 
         if (!user_id){ return res.status(400).json({err: 'user id is required'}) }
 
-        const user = await prisma.user.findUnique({where: {user_id: req.body.user_id}})
+        const user = await prisma.user.findUnique({where: {user_id}})
 
         if (!user){ return res.status(404).json({err: 'User already deleted, kindly refresh your page.'})}
 
         if (user?.user_role === 'admin' ) {return res.status(401).json({err: `Not authorized to delete an admin`})}
 
-        
+
 
         const updated_user_data = await prisma.user.delete({  where: {user_id: req.body.user_id },  })
 
@@ -109,7 +109,7 @@ export const admin_delete_user_data = async(req: CustomRequest, res: Response, n
 
         admin_delete_user_data_mail(updated_user_data)
 
-        return res.status(200).json({msg: `User's account deleted successfully `, user: updated_user_data})
+        return res.status(200).json({msg: `Account deleted successfully `, user: updated_user_data})
         
     } catch (err:any) {
         console.log('Error occured while deleteing user data ', err);
