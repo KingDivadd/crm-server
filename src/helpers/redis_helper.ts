@@ -11,7 +11,7 @@ const redis_client = createClient({
     reconnectStrategy: (retries) => {
       if (retries > 10) {
         console.log('Too many retries, giving up'.red.bold);
-        return new Error('Retry limit reached');
+        return new Error('Retry limit reached.');
       }
       return Math.min(retries * 100, 3000); 
     }
