@@ -11,11 +11,17 @@ const bcrypt = require('bcrypt')
 
 export const create_new_user = async(req: CustomRequest, res: Response, next: NextFunction)=>{
     try {
+
+        const user_id = req.user.user_id
+
+        const admin_user = await prisma.user.findUnique({ where: {user_id }})
+
         const otp = generate_otp()
 
         const encrypted_password = await bcrypt.hash(req.body.password, salt_round);
 
         req.body.password = encrypted_password
+        req.body.company_id = admin_user?.company_id
         req.body.created_at = converted_datetime()
         req.body.updated_at = converted_datetime()
         req.body.company_id = req.user.company_id
@@ -26,7 +32,7 @@ export const create_new_user = async(req: CustomRequest, res: Response, next: Ne
 
         created_user_welcome_mail(create_user, otp)
 
-        return res.status(201).json({msg: 'User created successfully, an email containing a verification code has been sent to them', new_user: create_user})
+        return res.status(201).json({msg: 'User created successfully, an email containing a verification code has been sent to the user', new_user: create_user})
     } catch (err:any) {
         console.log('Error occured while creating a new user ', err);
         return res.status(500).json({err: 'Error occured while creating a new user', error: err})
