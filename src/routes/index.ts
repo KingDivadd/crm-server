@@ -21,6 +21,7 @@ import { admin_change_user_data, admin_delete_user_data, change_user_activity_st
 import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification } from '../controllers/notification_controller'
 import { all_lead, filter_lead } from '../controllers/leads_controller'
+import { get_settings_information } from '../controllers/settings_controller'
 
 
 
@@ -88,6 +89,10 @@ router.route('/filter-leads/:disposition/:page_number').get(verify_auth_id, filt
 router.route('/test-connection').get(test_connection)
 
 router.route('/test-db-connection').get(test_db_connection)
+
+// Settins
+
+router.route('/settings-info').get(verify_auth_id, get_settings_information)
 
 
 
