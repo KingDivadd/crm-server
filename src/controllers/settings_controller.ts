@@ -6,10 +6,7 @@ import { CustomRequest } from '../helpers/interface'
 
 export const get_settings_information = async(req: CustomRequest, res: Response, next: NextFunction)=>{
     try {
-        const user = req.user
-
-        console.log(user);
-        
+        const user = req.user        
         
         // if admin
         if (user.user_role == 'admin') {
