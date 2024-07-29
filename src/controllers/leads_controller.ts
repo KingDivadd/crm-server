@@ -30,6 +30,7 @@ export const all_lead = async(req: CustomRequest, res: Response, next: NextFunct
 }
 
 export const filter_lead = async(req: CustomRequest, res: Response, next: NextFunction)=>{
+    
     try {
 
         const {page_number, disposition} = req.params
@@ -40,8 +41,8 @@ export const filter_lead = async(req: CustomRequest, res: Response, next: NextFu
 
         const [number_of_leads, leads] = await Promise.all([
 
-            prisma.lead.count({ where: {disposition: disposition.toUpperCase()} }),
-            prisma.lead.findMany({ skip: (Math.abs(Number(page_number)) - 1) * 10, take: 10, orderBy: { created_at: 'desc'  } }),
+            prisma.lead.count({ where: {disposition: disposition.toUpperCase()}, }),
+            prisma.lead.findMany({ include: {user: true, designer: true, job: true, sales: true, tasks: true}, skip: (Math.abs(Number(page_number)) - 1) * 10, take: 10, orderBy: { created_at: 'desc'  } }),
 
         ])
 
