@@ -11,7 +11,7 @@ import {admin_complete_signup, admin_signup, generate_user_otp, reset_password, 
     resend_otp,
     get_user_info} from '../controllers/authentication'
 
-import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_user_validation, verify_otp_validation} from '../validations/index'
+import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_settings_validation, update_user_validation, verify_otp_validation} from '../validations/index'
 
 import {email_exist, validate_admin_access, verify_auth_id, verify_otp} from '../helpers/auth_helper'
 
@@ -93,6 +93,8 @@ router.route('/test-db-connection').get(test_db_connection)
 // Settins
 
 router.route('/settings-info').get(verify_auth_id, get_settings_information)
+
+router.route('/update-settings-info').patch(verify_auth_id, update_settings_validation)
 
 
 

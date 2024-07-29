@@ -234,3 +234,37 @@ export const update_user_validation = async (req: Request, res: Response, next: 
     }
 }
 
+
+export const update_settings_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const schema = Joi.object({
+            company_logo: Joi.string().trim().allow('').optional(),
+            company_name: Joi.string().trim().allow('').optional(),
+            company_address: Joi.string().trim().allow('').optional(),
+            company_email: Joi.string().trim().allow('').optional(),
+            company_phone: Joi.array().items(Joi.string().optional()).optional(),
+            number_of_admin: Joi.string().trim().allow('').optional(),
+
+            avatar: Joi.string().trim().allow('').optional(),
+            first_name: Joi.string().trim().allow('').optional(),
+            last_name: Joi.string().trim().allow('').optional(),
+            other_names: Joi.string().trim().allow('').optional(),
+            phone_number: Joi.string().trim().allow('').optional(),
+            password: Joi.string().trim().allow('').optional(),
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating system settings input ',error })
+    }
+}
+

@@ -12,6 +12,7 @@ model Company {
   company_id                              String           @id @default(uuid()) @unique
   company_name                            String           
   company_address                         String?
+  company_email                           String?
   company_phone                           Json             @default("[]")
   organization_size                       Int              @default(value: 0)
   number_of_admin                         Int              @default(value: 0)
