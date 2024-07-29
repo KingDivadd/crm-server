@@ -80,15 +80,12 @@ export const sales_pipeline_page = async(req: CustomRequest, res: Response, next
 
         if (total_sales) {
             total_sales_amount = total_sales.reduce((accumulator, currentValue) => accumulator + currentValue.contract_amount, 0);
-
-            return res.status(200).json({total_lead, total_sales, conversion_rate, sales_Pipeline, total_sales_amount})
         }
 
-        return res.status(200).json({total_lead, total_sales, conversion_rate, sales_Pipeline})
+        return res.status(200).json({total_lead, total_sales, conversion_rate, sales_Pipeline, total_sales_amount: total_sales_amount || 0})
         
     } catch (err:any) {
         console.log('Error while fetching sales pipeline page info ', err);
         return res.status(500).json({err: 'Error while fetching sales pipeline page info ', error: err});
-
     }
 }
