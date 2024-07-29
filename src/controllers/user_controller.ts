@@ -14,7 +14,13 @@ export const create_new_user = async(req: CustomRequest, res: Response, next: Ne
 
         const user_id = req.user.user_id
 
-        const admin_user = await prisma.user.findUnique({ where: {user_id }})
+        const [admin_user, available_admin_users] = await Promise.all ([
+             prisma.user.findUnique({ where: {user_id }, include: {company: true}}),
+            
+             prisma.user.count({where: {user_role: 'admin'}})
+            ])
+
+
 
         const otp = generate_otp()
 
@@ -25,6 +31,10 @@ export const create_new_user = async(req: CustomRequest, res: Response, next: Ne
         req.body.created_at = converted_datetime()
         req.body.updated_at = converted_datetime()
         req.body.company_id = req.user.company_id
+
+        if (req.body.user_role == 'admin' && (admin_user?.company?.number_of_admin == available_admin_users )){
+            return res.status(400).json({err: 'Maximum number of admins already reached.'})
+        }
 
         const create_user = await prisma.user.create({data: req.body })
 
