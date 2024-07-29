@@ -54,6 +54,7 @@ model User {
   payroll                                 Payroll[]
   service_ticket                          Service_Ticket[]
   task_notifications                      Task_Notification[]
+  sales_Pipelines                         Sales_Pipeline[]
   
   assigned_tasks                          Task[]    @relation("Assigned_Tasks")
   created_tasks                           Task[]    @relation("Created_Tasks")
@@ -77,6 +78,7 @@ model Lead {
   sales                                   Sale[]
   designer                                Designer[]
   tasks                                   Task[]
+  sales_Pipelines                         Sales_Pipeline[]
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -611,4 +613,43 @@ enum StructureType {
   FLAT_PAN
   LOUVER
   HYBRID
+}
+
+model Sales_Pipeline {
+  pipeline_id                             String     @id @default(uuid()) @unique
+
+  lead                                    Lead?         @relation(fields: [lead_id], references: [lead_id])
+  lead_id                                 String?
+
+  customer                                User?     @relation(fields: [customer_id], references: [user_id])
+  customer_id                             String?
+
+  appointment_date                        String?
+  disposition                             Disposition?
+  contract_amount                         Decimal
+  project_type                            String
+  status                                  SalesStatus
+  project_id                              String?
+  notes                                   Note[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum SalesStatus {
+  Active
+  Inactive
+  Closed
+  Archived
+}
+
+model Note {
+  note_id                                 String          @id @default(uuid()) @unique
+  content                                 String
+
+  pipeline                                Sales_Pipeline? @relation(fields: [pipeline_id], references: [pipeline_id])
+  pipeline_id                             String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
 }

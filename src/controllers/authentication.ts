@@ -335,7 +335,7 @@ export const main_sales_dashboard = async(req: CustomRequest, res: Response, nex
 
         ])
 
-        const conversion_rate = total_sales / total_lead * 100
+        const conversion_rate = (total_sales / total_lead) * 100
 
 
         return res.status(200).json({total_lead, total_sales, conversion_rate, pending_task, recent_activities, recent_notifications, recent_tasks })
