@@ -99,7 +99,7 @@ router.route('/update-settings-info').patch(verify_auth_id, update_settings_vali
 
 // Sales Department
 
-router.route('/main-dashboard').get(verify_auth_id, main_sales_dashboard)
+router.route('/sales-main-dashboard').get(verify_auth_id, main_sales_dashboard)
 
 
 export default router
