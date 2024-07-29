@@ -19,6 +19,7 @@ model Company {
   company_logo                            String?   
 
   user                                    User[]
+  tasks                                   Task[]
 
 
   created_at                              Decimal
@@ -53,6 +54,9 @@ model User {
   payroll                                 Payroll[]
   service_ticket                          Service_Ticket[]
   task_notifications                      Task_Notification[]
+  
+  assigned_tasks                          Task[]    @relation("Assigned_Tasks")
+  created_tasks                           Task[]    @relation("Created_Tasks")
 
 
   created_at                              Decimal
@@ -72,6 +76,7 @@ model Lead {
   job                                     Job[]
   sales                                   Sale[]
   designer                                Designer[]
+  tasks                                   Task[]
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -341,7 +346,7 @@ model Task_Notification {
   message                                 String?
   read                                    Boolean          @default(false)
   task_type                               Task_Type
-  due_date                                DateTime?
+  due_date                                String?
   task_notification_status                Task_Notification_Status
 
   user                                    User?            @relation(fields: [user_id], references: [user_id])
@@ -537,6 +542,48 @@ model Job {
   updated_at                              Decimal
 }
 
+model Task {
+  task_id                                 String      @id @default(uuid()) @unique
+  title                                   String
+  description                             String?
+  status                                  Task_Status
+  priority                                Task_Priority
+  due_date                                String?
+
+  // Relationships
+
+  created_by                              User?      @relation("Created_Tasks", fields: [created_by_id], references: [user_id])
+  created_by_id                           String?
+
+  assigned_to                             User?      @relation("Assigned_Tasks", fields: [assigned_to_id], references: [user_id])
+  assigned_to_id                          String?
+
+  company                                 Company?      @relation(fields: [company_id], references: [company_id])
+  company_id                              String?
+
+  lead                                    Lead?      @relation(fields: [lead_id], references: [lead_id])
+  lead_id                                 String?
+
+  project                                 Project?      @relation(fields: [project_id], references: [project_id])
+  project_id                              String?
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+enum Task_Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum Task_Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+
 model Project {
   project_id                              String      @id @default(uuid()) @unique
 
@@ -552,6 +599,7 @@ model Project {
   end_cap_style                           String
   cover_color                             String
   trim_color                              String
+  tasks                                   Task[]
 
   created_at                              Decimal
   updated_at                              Decimal
