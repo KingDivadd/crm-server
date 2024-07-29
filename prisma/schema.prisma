@@ -507,7 +507,6 @@ model Activity {
   job                                     Job?       @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
 
-
   created_at                              Decimal
   updated_at                              Decimal
 }

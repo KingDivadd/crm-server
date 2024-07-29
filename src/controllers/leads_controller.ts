@@ -20,7 +20,7 @@ export const all_lead = async(req: CustomRequest, res: Response, next: NextFunct
             msg: 'All Leads ', 
             total_number_of_leads: number_of_leads,
             total_number_of_leads_pages: number_of_leads_pages,
-            leadss: leads,
+            leads: leads,
          })
         
     } catch (err:any) {
@@ -51,7 +51,7 @@ export const filter_lead = async(req: CustomRequest, res: Response, next: NextFu
             msg: 'Filtered Leads ', 
             total_number_of_leads: number_of_leads,
             total_number_of_leads_pages: number_of_leads_pages,
-            leadss: leads,
+            leads: leads,
          })
         
     } catch (err:any) {
