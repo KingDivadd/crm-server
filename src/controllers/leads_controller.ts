@@ -76,6 +76,13 @@ export const sales_pipeline_page = async(req: CustomRequest, res: Response, next
 
         const conversion_rate = (total_sales.length / total_lead) * 100
 
+        let total_sales_amount;
+
+        if (total_sales) {
+            total_sales_amount = total_sales.reduce((accumulator, currentValue) => accumulator + currentValue.contract_amount, 0);
+
+            return res.status(200).json({total_lead, total_sales, conversion_rate, sales_Pipeline, total_sales_amount})
+        }
 
         return res.status(200).json({total_lead, total_sales, conversion_rate, sales_Pipeline})
         
