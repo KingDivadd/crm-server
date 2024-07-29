@@ -35,51 +35,65 @@ export const get_settings_information = async(req: CustomRequest, res: Response,
     }
 }
 
-export const update_settings_information = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    const {company_logo, company_name, company_address, company_email, company_phone, number_of_admin, avatar, first_name, last_name, other_names, phone, password} = req.body
+
+export const update_settings_information = async (req: CustomRequest, res: Response, next: NextFunction) => {
+    const { company_logo, company_name, company_address, company_email, company_phone, number_of_admin, avatar, first_name, last_name, other_names, phone,  password  } = req.body;
+
     try {
+        const user_id = req.user.user_id;
 
-        const user_id = req.user.user_id
+        let encrypted_password:string = '';
+        if (password) {
+            encrypted_password = await bcrypt.hash(password, salt_round);
+        }
 
-        const encrypted_password = await bcrypt.hash(password, salt_round);
+        const user = await prisma.user.findUnique({ where: { user_id } });
 
-        const user = await prisma.user.findUnique({where: {user_id}})
-
-        if (user && user?.user_role == 'admin' && user.company_id ){
-
+        if (user && user?.user_role === 'admin' && user.company_id) {
             const [updated_user, updated_company] = await Promise.all([
                 prisma.user.update({
-                    where: {user_id},
+                    where: { user_id },
                     data: {
-                        avatar, first_name, last_name, other_names, phone_number: phone, password: encrypted_password
-                    }
+                        ...(avatar && { avatar }),
+                        ...(first_name && { first_name }),
+                        ...(last_name && { last_name }),
+                        ...(other_names && { other_names }),
+                        ...(phone && { phone_number: phone }),
+                        ...(encrypted_password && { password: encrypted_password }),
+                    },
                 }),
 
                 prisma.company.update({
-                    where: {company_id: user?.company_id},
+                    where: { company_id: user.company_id },
                     data: {
-                        company_logo, company_name, company_address, company_email, company_phone, number_of_admin
-                    }
+                        ...(company_logo && { company_logo }),
+                        ...(company_name && { company_name }),
+                        ...(company_address && { company_address }),
+                        ...(company_email && { company_email }),
+                        ...(company_phone && { company_phone }),
+                        ...(number_of_admin && { number_of_admin }),
+                    },
                 })
-            ])
+            ]);
 
-            return res.status(200).json({msg: 'Settings information Updated Successfully ', updated_user, updated_company})
-
-        }else{
+            return res.status(200).json({ msg: 'Settings information updated successfully', updated_user, updated_company });
+        } else {
             const updated_user = await prisma.user.update({
-                where: {user_id: user?.user_id},
+                where: { user_id: user?.user_id },
                 data: {
-                    avatar, first_name, last_name, other_names, phone_number: phone, password: encrypted_password
-                }
-            })
+                    ...(avatar && { avatar }),
+                    ...(first_name && { first_name }),
+                    ...(last_name && { last_name }),
+                    ...(other_names && { other_names }),
+                    ...(phone && { phone_number: phone }),
+                    ...(encrypted_password && { password: encrypted_password }),
+                },
+            });
 
-            return res.status(200).json({msg: 'Settings Information updaeted successfully', updated_user})
+            return res.status(200).json({ msg: 'Settings information updated successfully', updated_user });
         }
-
-
-        
-    } catch (err:any) {
-        console.log('Error occured while updating settings information ', err);
-        return res.status(500).json({err: 'Error occured while updating settings information ', errror: err});
+    } catch (err: any) {
+        console.error('Error occurred while updating settings information', err);
+        return res.status(500).json({ err: 'Error occurred while updating settings information', error: err });
     }
-}
+};

@@ -21,7 +21,7 @@ import { admin_change_user_data, admin_delete_user_data, change_user_activity_st
 import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification } from '../controllers/notification_controller'
 import { all_lead, filter_lead } from '../controllers/leads_controller'
-import { get_settings_information } from '../controllers/settings_controller'
+import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 
 
 
@@ -94,7 +94,7 @@ router.route('/test-db-connection').get(test_db_connection)
 
 router.route('/settings-info').get(verify_auth_id, get_settings_information)
 
-router.route('/update-settings-info').patch(verify_auth_id, update_settings_validation)
+router.route('/update-settings-info').patch(verify_auth_id, update_settings_validation, update_settings_information)
 
 
 
