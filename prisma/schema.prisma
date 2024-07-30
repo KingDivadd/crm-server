@@ -599,7 +599,7 @@ model Project {
   sale                                    Sale?        @relation(fields: [sale_id], references: [sale_id])
   sale_id                                 String?
 
-  progress_tracker                        Installation?        @relation(fields: [progress_tracker_id], references: [job_id])
+  progress_tracker                        Installation?        @relation(fields: [progress_tracker_id], references: [installation_id])
   progress_tracker_id                     String?
 
   attached                                Boolean
