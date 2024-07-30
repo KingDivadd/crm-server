@@ -55,6 +55,7 @@ model User {
   service_ticket                          Service_Ticket[]
   task_notifications                      Task_Notification[]
   sales_Pipelines                         Sales_Pipeline[]
+  jobs                                    Job[]
   
   assigned_tasks                          Task[]    @relation("Assigned_Tasks")
   created_tasks                           Task[]    @relation("Created_Tasks")
@@ -170,6 +171,7 @@ model Installation {
   materials                               Material[]
   bill_sheets                             Bill_Sheet[]
   notifications                           Notification[]
+  projects                                Project[]
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -522,6 +524,9 @@ model Job {
   sale                                    Sale?      @relation(fields: [sale_id], references: [sale_id])
   sale_id                                 String?
 
+  customer                                User?      @relation(fields: [customer_id], references: [user_id])
+  customer_id                             String?
+
   job_number                              String
   contract_amount                         Float
   contract_date                           String
@@ -593,6 +598,9 @@ model Project {
 
   sale                                    Sale?        @relation(fields: [sale_id], references: [sale_id])
   sale_id                                 String?
+
+  progress_tracker                        Installation?        @relation(fields: [progress_tracker_id], references: [job_id])
+  progress_tracker_id                     String?
 
   attached                                Boolean
   structure_type                          StructureType
