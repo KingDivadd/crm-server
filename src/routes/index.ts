@@ -21,7 +21,7 @@ import {test_connection, test_db_connection} from "../controllers/test_server_co
 import { admin_change_user_data, admin_delete_user_data, change_user_activity_status, create_new_user } from '../controllers/user_controller'
 import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification } from '../controllers/notification_controller'
-import { all_lead, filter_lead, job_contract_overview, sales_pipeline_page } from '../controllers/leads_controller'
+import { all_lead, filter_lead, installation_overview, job_contract_overview, project_information, sales_pipeline_page } from '../controllers/leads_controller'
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 
 
@@ -104,6 +104,12 @@ router.route('/sales-main-dashboard').get(verify_auth_id, main_sales_dashboard)
 router.route('/sales-pipeline').get(verify_auth_id, sales_pipeline_page)
 
 router.route('/job-contract-details/:page_number').get(verify_auth_id, job_contract_overview)
+
+router.route('/project-information/:page_number').get(verify_auth_id, project_information)
+
+router.route('/project-progress-tracking/:page_number').get(verify_auth_id, installation_overview)
+
+
 
 
 
