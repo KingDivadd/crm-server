@@ -103,7 +103,7 @@ router.route('/sales-main-dashboard').get(verify_auth_id, main_sales_dashboard)
 
 router.route('/sales-pipeline').get(verify_auth_id, sales_pipeline_page)
 
-router.route('/job-contract-details').get(verify_auth_id, job_contract_overview)
+router.route('/job-contract-details/:page_number').get(verify_auth_id, job_contract_overview)
 
 
 
