@@ -133,7 +133,7 @@ export const project_information = async(req: CustomRequest, res: Response, next
 
     } catch (err: any) {
         console.log('Error occured while fetching project information ', err);
-        return res.status(200).json({err: 'Error occured while fetching project information', error: err})
+        return res.status(200).json({err: 'Error occured while fetching project information.', error: err})
     }
 }
 
