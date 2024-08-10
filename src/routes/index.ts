@@ -18,7 +18,7 @@ import {email_exist, validate_admin_access, verify_auth_id, verify_otp} from '..
 
 import {test_connection, test_db_connection} from "../controllers/test_server_connection"
 
-import { admin_change_user_data, admin_delete_user_data, change_user_activity_status, create_new_user } from '../controllers/user_controller'
+import { admin_change_user_data, admin_delete_user_data, all_sales_staff, change_user_activity_status, create_new_user } from '../controllers/user_controller'
 import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification } from '../controllers/notification_controller'
 import { all_lead, filter_lead, installation_overview, job_contract_overview, project_information, sales_pipeline_page } from '../controllers/leads_controller'
@@ -53,6 +53,8 @@ router.route('/logged-in-admin/:page_number/:notification_page_number').get(veri
 // User Management For Admin role alone
 
 router.route('/all-users/:page_number').get(verify_auth_id, all_users )
+
+router.route('/all-sales-staff').get(verify_auth_id, all_sales_staff)
 
 router.route('/filter-users/:page_number').get(verify_auth_id, filter_users )
 
