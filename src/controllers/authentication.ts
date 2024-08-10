@@ -30,7 +30,9 @@ export const admin_signup = async(req:Request, res: Response, next: NextFunction
 
         const new_auth_id = await redis_auth_store(staff, 60 * 60 * 24 )
 
-        res.setHeader('x-id-key', new_auth_id)
+        if(new_auth_id){
+            res.setHeader('x-id-key', new_auth_id)
+        }
 
         return res.status(201).json({msg: `Account created successfully.`})
         
@@ -218,7 +220,9 @@ export const verify_user_otp = async (req: CustomRequest, res: Response, next: N
 
         const auth_id = await redis_auth_store(user, 60 * 60 * 23);
 
-        res.setHeader('x-id-key', auth_id)
+        if (auth_id) {   
+            res.setHeader('x-id-key', auth_id)
+        }
 
         return res.status(200).json({ msg: 'Verification successful' })
 
