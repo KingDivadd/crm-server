@@ -15,10 +15,10 @@ export const create_new_user = async(req: CustomRequest, res: Response, next: Ne
         const user_id = req.user.user_id
 
         const [admin_user, available_admin_users] = await Promise.all ([
-             prisma.user.findUnique({ where: {user_id }, include: {company: true}}),
-            
-             prisma.user.count({where: {user_role: 'admin'}})
-            ])
+            prisma.user.findUnique({ where: {user_id }, include: {company: true}}),
+        
+            prisma.user.count({where: {user_role: 'admin'}})
+        ])
 
 
 

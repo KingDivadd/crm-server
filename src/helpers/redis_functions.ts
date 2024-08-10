@@ -14,7 +14,7 @@ export const redis_auth_store = async (user: any, useful_time: number) => {
         return uuid;
     } catch (err) {
         console.error('Error in redis auth store func:', err);
-        throw err;
+        
     }
 }
 
@@ -24,7 +24,7 @@ export const redis_otp_store = async (email: string, sent_otp: string, status: s
         await (await redis_client).set(`${email}`, token, {EX: useful_time})
     } catch (err) {
         console.error('Error in redis otp store func:', err);
-        throw err;
+        
     }
 }
 
@@ -41,7 +41,7 @@ export const redis_value_update = async (uuid: string, user: any, useful_time: n
         }
     } catch (err) {
         console.error('Error in redis data update : ', err);
-        throw err;
+        
     }
 }
 
