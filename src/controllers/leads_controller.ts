@@ -21,7 +21,7 @@ export const all_lead = async(req: CustomRequest, res: Response, next: NextFunct
             total_number_of_leads: number_of_leads,
             total_number_of_leads_pages: number_of_leads_pages,
             leads: leads,
-         })
+        })
         
     } catch (err:any) {
         console.log('Error occured while fetching all lead ', err);

@@ -132,3 +132,18 @@ export const admin_delete_user_data = async(req: CustomRequest, res: Response, n
         return res.status(500).json({err: 'Error occured while deleteing data ', error: err})
     }
 }
+
+export const all_sales_staff = async(req: CustomRequest, res: Response, next:NextFunction)=>{
+    try {
+        
+        const staffs = await prisma.user.findMany({
+            where: {user_role: 'sales'}
+        })
+
+        return res.status(200).json({nbHit: staffs.length, staffs})
+
+    } catch (err:any) {
+        console.log('Error occured while fetching all sales staffs', err);
+        return res.status(500).json({err: 'Error occured while fetching all sales staff ', error: err})
+    }
+}
