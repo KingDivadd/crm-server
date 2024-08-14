@@ -53,6 +53,7 @@ app.use('/api/v1/auth', index);
 app.use('/api/v1/activity', index);
 app.use('/api/v1/notification', index);
 app.use('/api/v1/lead', index);
+app.use('/api/v1/job', index);
 app.use('/api/v1/settings', index);
 app.use('/api/v1/sales', index);
 

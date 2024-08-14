@@ -263,7 +263,7 @@ export const logged_in_admin = async(req: CustomRequest, res: Response, next: Ne
 
         const {page_number,  notification_page_number} = req.params
 
-        const [user,  leads, sales, installations, project, number_of_activities, activities, service_tickets, payments, engineering, permit, accounting, number_of_notification , task_notification ] = await Promise.all([
+        const [user,  leads, sales, installations, project, number_of_activities, activities, service_tickets, payments, accounting, number_of_notification , task_notification ] = await Promise.all([
 
             prisma.user.findUnique({ where: {user_id}, include: {company: true}}),
 
@@ -277,8 +277,6 @@ export const logged_in_admin = async(req: CustomRequest, res: Response, next: Ne
 
             prisma.service_Ticket.findMany({}),
             prisma.payment.findMany({}),
-            prisma.engineering.findMany({}),
-            prisma.permit.findMany({}),
             prisma.accounting.findMany({}),
 
             prisma.task_Notification.count({}),
@@ -308,8 +306,6 @@ export const logged_in_admin = async(req: CustomRequest, res: Response, next: Ne
             ongoing_installations: installations.filter((data:any) => data.installation_status == 'IN_PROGRESS'),
             open_service_tickets: service_tickets.filter((data:any) => data.status == 'OPEN' ),
             pending_payments: payments.filter((data:any) => data.payment_status == 'PENDING'),
-            engineering_task: engineering.filter((data:any) => data.engineering_status == 'PENDING'),
-            permit: permit.filter((data:any) => data.permit_status == 'PENDING'),
             accounting: accounting,
 
             total_number_of_task_notification: number_of_activities,

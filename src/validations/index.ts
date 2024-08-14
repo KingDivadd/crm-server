@@ -268,3 +268,113 @@ export const update_settings_validation = async (req: Request, res: Response, ne
     }
 }
 
+
+export const create_lead_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            customer_name: Joi.string().trim().required(),
+            address: Joi.string().trim().required(),
+            phone_number: Joi.string().trim().required(),
+            email: Joi.string().email().trim().required(),
+            gate_code: Joi.string().trim().required(),
+            assigned_to_id: Joi.string().trim().required(),
+            appointment_date: Joi.string().trim().required(),
+            disposition: Joi.string().trim().required(),
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating lead creation input ',error })
+    }
+}
+
+export const create_job_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            lead_id: Joi.string().trim().required(),
+            contract_amount: Joi.string().trim().required(),
+            contract_date: Joi.string().trim().required(),
+            hoa_status: Joi.string().trim().required(),
+            engineering_status: Joi.string().trim().required(),
+            engineering_submitted: Joi.string().trim().allow('').optional(),
+            engineering_received: Joi.string().trim().allow('').optional(),
+            permit_status: Joi.string().trim().allow('').optional(),
+            permit_sent_date: Joi.string().trim().allow('').optional(),
+            permit_approved_date: Joi.string().trim().allow('').optional(),
+            cover_size: Joi.string().trim().allow('').optional(),
+            cover_color: Joi.string().trim().allow('').optional(),
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating job creation input ',error })
+    }
+}
+
+export const create_task_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            job_id: Joi.string().trim().required(),
+            description: Joi.string().trim().required(),
+            assigned_to: Joi.string().trim().required(),
+            status: Joi.string().trim().required(),
+            start_date: Joi.string().trim().allow('').optional(),
+            due_date: Joi.string().trim().allow('').optional(),
+            completion_date: Joi.string().trim().allow('').optional(),
+            note: Joi.string().trim().allow('').optional(),
+            
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating task creation input ',error })
+    }
+}
+export const edit_task_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            job_id: Joi.string().trim().required(),
+            description: Joi.string().trim().required(),
+            status: Joi.string().trim().required(),
+            start_date: Joi.string().trim().allow('').optional(),
+            due_date: Joi.string().trim().allow('').optional(),
+            completion_date: Joi.string().trim().allow('').optional(),
+            
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating task creation input ',error })
+    }
+}
+

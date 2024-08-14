@@ -19,7 +19,6 @@ model Company {
   company_logo                            String?   
 
   user                                    User[]
-  tasks                                   Task[]
 
 
   created_at                              Decimal
@@ -57,7 +56,6 @@ model User {
   sales_Pipelines                         Sales_Pipeline[]
   jobs                                    Job[]
   
-  assigned_tasks                          Task[]    @relation("Assigned_Tasks")
   created_tasks                           Task[]    @relation("Created_Tasks")
 
 
@@ -65,20 +63,22 @@ model User {
   updated_at                              Decimal
 }
 
+
 model Lead {
   lead_id                                 String           @id @default(uuid()) @unique
-  customer_name                           String?
+  lead_ind                                Int      @default(autoincrement())
+  customer_name                           String
   address                                 String?
+  email                                   String?
   phone_number                            String?
-  user                                    User?       @relation(fields: [user_id], references: [user_id])
-  user_id                                 String?
+  assigned_to                             User?       @relation(fields: [assigned_to_id], references: [user_id])
+  assigned_to_id                          String?
   gate_code                               String
-  appo_stringment_date                    String
+  appointment_date                        String
   disposition                             Disposition
   job                                     Job[]
   sales                                   Sale[]
   designer                                Designer[]
-  tasks                                   Task[]
   sales_Pipelines                         Sales_Pipeline[]
 
   created_at                              Decimal
@@ -115,9 +115,7 @@ model Sale {
   notifications                           Notification[]
   payments                                Payment[]
   invoice                                 Invoice[]
-  engineering                             Engineering[]
   accounting                              Accounting[]
-  permit                                  Permit[]
   job                                     Job[]
 
   created_at                              Decimal
@@ -192,9 +190,6 @@ model Inspection {
 
   installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
   installation_id                         String?
-
-  permit                                  Permit?      @relation(fields: [permit_id], references: [permit_id])
-  permit_id                               String?
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -331,11 +326,6 @@ model Notification {
   installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
   installation_id                         String?
 
-  engineering                             Engineering?      @relation(fields: [engineering_id], references: [engineering_id])
-  engineering_id                          String?
-
-  permit                                  Permit?      @relation(fields: [permit_id], references: [permit_id])
-  permit_id                               String?
 
   job                                     Job?       @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
@@ -355,6 +345,9 @@ model Task_Notification {
 
   user                                    User?            @relation(fields: [user_id], references: [user_id])
   user_id                                 String?
+
+  assigned_to                             String?
+  note                                    String?
 
   job                                     Job?             @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
@@ -376,65 +369,6 @@ enum Task_Type {
   PERMIT_APPROVAL
   INSTALLATION_SCHEDULE
   PAYMENT_DUE
-}
-
-
-model Engineering {
-  engineering_id                          String           @id @default(uuid()) @unique
-
-  sale                                    Sale?       @relation(fields: [sale_id], references: [sale_id])
-  sale_id                                 String?
-
-  job                                     Job?       @relation(fields: [job_id], references: [job_id])
-  job_id                                  String?
-
-  engineering_status                      Engineering_Status     @default(PENDING)
-
-  submitted_date                          String?
-  received_date                           String?
-  cost                                    Float?
-  notifications                           Notification[]
-
-  created_at                              Decimal
-  updated_at                              Decimal
-}
-
-enum Engineering_Status {
-  SUBMITTED
-  APPROVED
-  NOT_APPROVED
-  NOT_REQUIRED
-  PENDING
-  COMPLETED
-
-}
-
-model Permit {
-  permit_id                               String           @id @default(uuid()) @unique
-
-  sale                                    Sale?       @relation(fields: [sale_id], references: [sale_id])
-  sale_id                                 String?
-
-  job                                     Job?       @relation(fields: [job_id], references: [job_id])
-  job_id                                  String?
-
-  permit_status                           Permit_Status     @default(PENDING)
-  sent_date                               String?
-  approved_date                           String?
-  permit_number                           String?
-  cost                                    Float?
-  notifications                           Notification[]
-  inspections                             Inspection[]
-
-  created_at                              Decimal
-  updated_at                              Decimal
-}
-
-enum Permit_Status {
-  PENDING
-  APPROVED
-  REJECTED
-  SUBMITTED
 }
 
 model Accounting {
@@ -517,6 +451,7 @@ model Activity {
 
 model Job {
   job_id                                  String      @id @default(uuid()) @unique
+  job_ind                                 Int      @default(autoincrement())
 
   lead                                    Lead?       @relation(fields: [lead_id], references: [lead_id])
   lead_id                                 String?
@@ -527,15 +462,26 @@ model Job {
   customer                                User?      @relation(fields: [customer_id], references: [user_id])
   customer_id                             String?
 
-  job_number                              String
   contract_amount                         Float
   contract_date                           String
-  email                                   String
-  hoa                                     Boolean
+  email                                   String?
+  hoa_status                              Hoa
   hoa_sent_date                           String?
-  hoa_approved_date                       String?
-  engineering                             Engineering[]
-  permit                                  Permit[]
+  hoa_approval_date                       String?
+
+  engineering_submit_date                 String?
+  engineering_received_date               String?
+  engineering_resubmitted_date            String?
+  engineering_approval_date               String?
+  engineering_status                      EngineeringStatus
+
+  permit_submit_date                      String?
+  permit_approval_date                    String?
+  permit_status                           PermitStatus?
+  cover_color                             String?
+  cover_size                              String?
+
+  
   project                                 Project[]
   payments                                Payment[]
   invoices                                Invoice[]
@@ -543,35 +489,54 @@ model Job {
   notifications                           Notification[]
   installations                           Installation[]
   task_notifications                      Task_Notification[]
+  tasks                                   Task[]
 
   created_at                              Decimal
   updated_at                              Decimal
 }
 
+enum PermitStatus {
+  NOT_REQUIRED
+  SUBMITTED
+  APPROVED
+  REJECTED
+}
+
+enum EngineeringStatus {
+  SUBMITTED
+  NOT_REQUIRED
+  REVISION_REQUIRED
+  APPROVED
+  REJECTED
+}
+
+enum Hoa {
+  NOT_REQUIRED
+  PENDING
+  SENT
+  APPROVED
+  REJECTED
+}
+
 model Task {
   task_id                                 String      @id @default(uuid()) @unique
-  title                                   String
+  task_ind                                Int      @default(autoincrement())
+
   description                             String?
+  assigned_to                             String?
   status                                  Task_Status
-  priority                                Task_Priority
+  start_date                              String?
   due_date                                String?
+  completion_date                         String?
+  note                                    String?
 
   // Relationships
 
   created_by                              User?      @relation("Created_Tasks", fields: [created_by_id], references: [user_id])
   created_by_id                           String?
 
-  assigned_to                             User?      @relation("Assigned_Tasks", fields: [assigned_to_id], references: [user_id])
-  assigned_to_id                          String?
-
-  company                                 Company?      @relation(fields: [company_id], references: [company_id])
-  company_id                              String?
-
-  lead                                    Lead?      @relation(fields: [lead_id], references: [lead_id])
-  lead_id                                 String?
-
-  project                                 Project?      @relation(fields: [project_id], references: [project_id])
-  project_id                              String?
+  job                                     Job?      @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -582,13 +547,6 @@ enum Task_Status {
   IN_PROGRESS
   COMPLETED
 }
-
-enum Task_Priority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
 
 model Project {
   project_id                              String      @id @default(uuid()) @unique
@@ -608,7 +566,7 @@ model Project {
   end_cap_style                           String
   cover_color                             String
   trim_color                              String
-  tasks                                   Task[]
+  
 
   created_at                              Decimal
   updated_at                              Decimal

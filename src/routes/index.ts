@@ -12,7 +12,7 @@ import {admin_complete_signup, admin_signup, generate_user_otp, reset_password, 
     get_user_info,
     main_sales_dashboard} from '../controllers/authentication'
 
-import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_settings_validation, update_user_validation, verify_otp_validation} from '../validations/index'
+import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_job_validation, create_lead_validation, create_task_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_settings_validation, update_user_validation, verify_otp_validation} from '../validations/index'
 
 import {email_exist, validate_admin_access, verify_auth_id, verify_otp} from '../helpers/auth_helper'
 
@@ -21,7 +21,7 @@ import {test_connection, test_db_connection} from "../controllers/test_server_co
 import { admin_change_user_data, admin_delete_user_data, all_sales_staff, change_user_activity_status, create_new_user } from '../controllers/user_controller'
 import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification } from '../controllers/notification_controller'
-import { all_lead, filter_lead, installation_overview, job_contract_overview, project_information, sales_pipeline_page } from '../controllers/leads_controller'
+import { all_jobs, all_lead, all_tasks, create_job, create_lead, create_task, delete_job, delete_lead, edit_job, edit_task, filter_lead, installation_overview, job_contract_overview, jobs, leads, project_information, sales_pipeline_page, update_lead } from '../controllers/leads_controller'
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 
 
@@ -82,10 +82,37 @@ router.route('/filter-task-notifications/:status/:page_number').get(verify_auth_
 
 // Lead
 
+router.route('/create-lead').post(verify_auth_id, create_lead_validation, create_lead)
+
+router.route('/edit-lead/:lead_id').patch(verify_auth_id, create_lead_validation, update_lead)
+
+router.route('/delete-lead/:lead_id').delete(verify_auth_id, delete_lead)
+
 router.route('/all-leads/:page_number').get(verify_auth_id, all_lead)
+
+router.route("/leads").get(verify_auth_id, leads)
 
 router.route('/filter-leads/:disposition/:page_number').get(verify_auth_id, filter_lead)
 
+// Job
+
+router.route('/create-job').post(verify_auth_id, create_job_validation, create_job)
+
+router.route('/edit-job/:job_id').patch(verify_auth_id, create_job_validation, edit_job)
+
+router.route('/all-jobs/:page_number').get(verify_auth_id, all_jobs)
+
+router.route('/jobs').get(verify_auth_id, jobs)
+
+router.route('/delete-job/:job_id').delete(verify_auth_id, delete_job)
+
+// Task
+
+router.route('/create-task').post(verify_auth_id, create_task_validation, create_task)
+
+router.route('/edit-task/:task_id').post(verify_auth_id, create_task_validation, edit_task)
+
+router.route('/all-tasks/:page_number').get(verify_auth_id, all_tasks)
 
 // Test route
 
