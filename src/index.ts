@@ -64,7 +64,7 @@ const start = async () => {
     const PORT = port || 5000;
     try {
         await connectToMongoDB();
-        server.listen(PORT, () => console.log(`OHealth server started and running on port ${PORT}`.cyan.bold));
+        server.listen(PORT, () => console.log(`Crm server started and running on port ${PORT}`.cyan.bold));
     } catch (err) {
         console.log(`something went wrong`.red.bold);
     }
