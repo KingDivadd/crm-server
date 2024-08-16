@@ -2,7 +2,7 @@ import { redis_url } from './constants';
 import { createClient } from 'redis';
 
 if (!redis_url) {
-    throw new Error('REDIS URL not found');
+    console.log('REDIS URL not found');
 }
 
 const redis_client = createClient({

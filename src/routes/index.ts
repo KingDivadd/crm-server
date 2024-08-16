@@ -21,7 +21,7 @@ import {test_connection, test_db_connection} from "../controllers/test_server_co
 import { admin_change_user_data, admin_delete_user_data, all_sales_staff, change_user_activity_status, create_new_user } from '../controllers/user_controller'
 import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification } from '../controllers/notification_controller'
-import { all_jobs, all_lead, all_tasks, create_job, create_lead, create_task, delete_job, delete_lead, edit_job, edit_task, filter_lead, installation_overview, job_contract_overview, jobs, leads, project_information, sales_pipeline_page, update_lead } from '../controllers/leads_controller'
+import { all_jobs, all_lead, all_pipeline, all_tasks, create_job, create_lead, create_task, delete_job, delete_lead, edit_job, edit_task, filter_lead, installation_overview, job_contract_overview, jobs, leads, project_information, sales_pipeline_page, update_lead } from '../controllers/leads_controller'
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 
 
@@ -110,9 +110,13 @@ router.route('/delete-job/:job_id').delete(verify_auth_id, delete_job)
 
 router.route('/create-task').post(verify_auth_id, create_task_validation, create_task)
 
-router.route('/edit-task/:task_id').post(verify_auth_id, create_task_validation, edit_task)
+router.route('/edit-task/:task_id').patch(verify_auth_id, create_task_validation, edit_task)
 
 router.route('/all-tasks/:page_number').get(verify_auth_id, all_tasks)
+
+// Sales Pipeline
+
+router.route('/all-pipeline/:page_number').get(verify_auth_id, all_pipeline )
 
 // Test route
 
@@ -130,7 +134,7 @@ router.route('/update-settings-info').patch(verify_auth_id, update_settings_vali
 
 router.route('/sales-main-dashboard').get(verify_auth_id, main_sales_dashboard)
 
-router.route('/sales-pipeline').get(verify_auth_id, sales_pipeline_page)
+router.route('/sales-pipeline/:page_number').get(verify_auth_id, sales_pipeline_page)
 
 router.route('/job-contract-details/:page_number').get(verify_auth_id, job_contract_overview)
 

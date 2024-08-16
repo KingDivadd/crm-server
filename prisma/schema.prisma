@@ -10,6 +10,7 @@ generator client {
 
 model Company {
   company_id                              String           @id @default(uuid()) @unique
+  company_ind                             String       @unique
   company_name                            String           
   company_address                         String?
   company_email                           String?
@@ -27,6 +28,7 @@ model Company {
 
 model User {
   user_id                                 String           @id @default(uuid()) @unique
+  user_ind                                String       @unique
 
   // Basic user info
   last_name                               String           @default(value: "")
@@ -50,10 +52,8 @@ model User {
   activities                              Activity[]
   notifications                           Notification[]
   designers                               Designer[]
-  payroll                                 Payroll[]
   service_ticket                          Service_Ticket[]
   task_notifications                      Task_Notification[]
-  sales_Pipelines                         Sales_Pipeline[]
   jobs                                    Job[]
   
   created_tasks                           Task[]    @relation("Created_Tasks")
@@ -66,7 +66,7 @@ model User {
 
 model Lead {
   lead_id                                 String           @id @default(uuid()) @unique
-  lead_ind                                Int      @default(autoincrement())
+  lead_ind                                String       @unique
   customer_name                           String
   address                                 String?
   email                                   String?
@@ -88,10 +88,13 @@ model Lead {
 enum Disposition {
   SOLD
   NOT_SOLD
+  IN_PROGRESS
+  LOST
 }
 
 model Sale {
   sale_id                                 String           @id @default(uuid()) @unique
+  Sale_ind                                String       @unique
 
   lead                                    Lead?       @relation(fields: [lead_id], references: [lead_id])
   lead_id                                 String?
@@ -141,6 +144,7 @@ enum Structure_Type {
 
 model Installation {
   installation_id                         String           @id @default(uuid()) @unique
+  installation_ind                        String       @unique
 
   job                                     Job?        @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
@@ -185,6 +189,7 @@ enum Installation_Status {
 
 model Inspection {
   inspection_id                           String           @id @default(uuid()) @unique
+  inspection_ind                          String       @unique
   date                                    String
   pass                                    Boolean
 
@@ -197,6 +202,7 @@ model Inspection {
 
 model Material {
   material_id                             String           @id @default(uuid()) @unique
+  material_ind                            String       @unique
   description                             String
   cost                                    Float
   received_date                           String?
@@ -211,6 +217,7 @@ model Material {
 
 model Bill_Sheet {
   bill_sheet_id                           String           @id @default(uuid()) @unique
+  bill_sheet_ind                          String       @unique
   description                             String
   cost                                    Float
   installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
@@ -222,6 +229,7 @@ model Bill_Sheet {
 
 model Payment {
   payment_id                              String           @id @default(uuid()) @unique
+  payment_ind                             String       @unique
   phase                                   Payment_Phase
   amount                                  Float
   date                                    String
@@ -253,6 +261,7 @@ enum Payment_Status {
 
 model Invoice {
   invoice_id                              String           @id @default(uuid()) @unique
+  invoice_ind                             String       @unique
   vendor                                  Vendor
   amount                                  Float
   date                                    String
@@ -281,6 +290,7 @@ enum Vendor {
 
 model Designer {
   designer_id                             String           @id @default(uuid()) @unique
+  designer_ind                            String       @unique
 
   user                                    User?       @relation(fields: [user_id], references: [user_id])
   user_id                                 String?
@@ -300,6 +310,7 @@ model Designer {
 
 model Contract_Doc {
   contract_doc_id                         String           @id @default(uuid()) @unique
+  contract_doc_ind                        String       @unique
   file_path                               String
 
   designer                                Designer?     @relation(fields: [designer_id], references: [designer_id])
@@ -311,6 +322,7 @@ model Contract_Doc {
 
 model Notification {
   notification_id                         String           @id @default(uuid()) @unique
+  notification_ind                        String       @unique
   message                                 String
   read                                    Boolean  @default(false)
 
@@ -337,6 +349,7 @@ model Notification {
 
 model Task_Notification {
   task_notification_id                    String           @id @default(uuid()) @unique
+  task_notification_ind                    String       @unique
   message                                 String?
   read                                    Boolean          @default(false)
   task_type                               Task_Type
@@ -373,6 +386,7 @@ enum Task_Type {
 
 model Accounting {
   accounting_id                           String           @id @default(uuid()) @unique
+  accounting_ind                          String       @unique
 
   project                                 Sale?       @relation(fields: [sale_id], references: [sale_id])
   sale_id                                 String?
@@ -380,45 +394,17 @@ model Accounting {
   average_cost                            Float
   profit_margins                          Float
   losses                                  Float
-  bills                                   Bill[]
   invoices                                Invoice[]
-  payrolls                                Payroll[]
+
 
   created_at                              Decimal
   updated_at                              Decimal
 }
 
-model Bill {
-  id                                      String           @id @default(uuid()) @unique
-  description                             String
-  amount                                  Float
-  date                                    String
-
-  accounting                              Accounting?      @relation(fields: [accounting_id], references: [accounting_id])
-  accounting_id                           String?
-
-  created_at                              Decimal
-  updated_at                              Decimal
-}
-
-model Payroll {
-  payroll_id                              String           @id @default(uuid()) @unique
-  description                             String
-  amount                                  Float
-  date                                    String
-
-  user                                    User?     @relation(fields: [user_id], references: [user_id])
-  user_id                                 String?
-
-  accounting                              Accounting?      @relation(fields: [accounting_id], references: [accounting_id])
-  accounting_id                           String?
-
-  created_at                              Decimal
-  updated_at                              Decimal
-}
 
 model Service_Ticket {
   service_ticket_id                       String           @id @default(uuid()) @unique
+  service_ticket_ind                      String       @unique
   description                             String
   status                                  Service_Ticket_Status @default(OPEN)
 
@@ -437,6 +423,7 @@ enum Service_Ticket_Status {
 
 model Activity {
   activity_id                             String           @id @default(uuid()) @unique
+  activity_ind                            String       @unique
   user                                    User?     @relation(fields: [user_id], references: [user_id])
   user_id                                 String?
   action                                  String
@@ -451,7 +438,7 @@ model Activity {
 
 model Job {
   job_id                                  String      @id @default(uuid()) @unique
-  job_ind                                 Int      @default(autoincrement())
+  job_ind                                 String       @unique
 
   lead                                    Lead?       @relation(fields: [lead_id], references: [lead_id])
   lead_id                                 String?
@@ -490,6 +477,7 @@ model Job {
   installations                           Installation[]
   task_notifications                      Task_Notification[]
   tasks                                   Task[]
+  sales_Pipelines                         Sales_Pipeline[]
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -520,7 +508,7 @@ enum Hoa {
 
 model Task {
   task_id                                 String      @id @default(uuid()) @unique
-  task_ind                                Int      @default(autoincrement())
+  task_ind                                String       @unique
 
   description                             String?
   assigned_to                             String?
@@ -550,6 +538,7 @@ enum Task_Status {
 
 model Project {
   project_id                              String      @id @default(uuid()) @unique
+  project_ind                             String       @unique
 
   job                                     Job?        @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
@@ -582,31 +571,34 @@ enum StructureType {
 }
 
 model Sales_Pipeline {
-  pipeline_id                             String     @id @default(uuid()) @unique
+  pipeline_id                             String       @id @default(uuid()) @unique
+  pipeline_ind                            String       @unique
 
-  lead                                    Lead?         @relation(fields: [lead_id], references: [lead_id])
-  lead_id                                 String?
+  lead                                    Lead?        @relation(fields: [lead_id], references: [lead_id])
+  lead_id                                 String?      // Reference to Lead
 
-  customer                                User?     @relation(fields: [customer_id], references: [user_id])
-  customer_id                             String?
-
-  appointment_date                        String?
-  disposition                             Disposition?
-  contract_amount                         Decimal
-  project_type                            String
-  status                                  SalesStatus
-  project_id                              String?
-  notes                                   Note[]
-
+  job                                     Job?         @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
+  
+  disposition                             Disposition? // Enum for Sold/Not Sold/Other dispositions
+  
+  contract_amount                         Float?      // Contract amount for the deal
+  
+  project_type                            String?       // Type of project (e.g., Freestanding, Lattice)
+  status                                  SalesStatus?  // Enum to track the sales pipeline status (e.g., In Progress, Sold, Lost)
+  project_id                              String?      // If sold, references the associated project ID
+  
+  notes                                   Note[]       // Array of notes for additional tracking or comments
+  
   created_at                              Decimal
   updated_at                              Decimal
 }
 
 enum SalesStatus {
-  Active
-  Inactive
-  Closed
-  Archived
+  INITIAL_CONTACT
+  NEGOTIATION
+  SOLD
+  LOST
 }
 
 model Note {

@@ -17,8 +17,15 @@ export const admin_signup = async(req:Request, res: Response, next: NextFunction
 
         const encrypted_password = await bcrypt.hash(password, salt_round);
 
+        const last_user = await prisma.user.findFirst({ orderBy: {created_at: 'desc'}})
+
+        const last_user_number = last_user ? parseInt(last_user.user_ind.slice(2)) : 0;
+        const new_user_number = last_user_number + 1;
+        const new_user_ind = `US${new_user_number.toString().padStart(4, '0')}`;
+
         const staff = await prisma.user.create({
             data: {
+                user_ind: new_user_ind,
                 first_name, last_name, email, password: encrypted_password, user_role: 'admin', phone_number,
 
                 created_at: converted_datetime(),
@@ -75,9 +82,16 @@ export const admin_complete_signup = async(req: CustomRequest, res: Response, ne
 
         const user_id = req.user.user_id
 
-        const user_company = await prisma.user.findUnique({where: {user_id}, select: {company_id:true}})
+        const [user_company, last_company] = await Promise.all([
+            prisma.user.findUnique({where: {user_id}, select: {company_id:true}}),
+            prisma.company.findFirst({orderBy: {created_at: 'desc'}})
+        ]) 
 
         // first check if their's is a company associated with a user
+
+        const last_company_number = last_company ? parseInt(last_company.company_ind.slice(2)) : 0;
+        const new_company_number = last_company_number + 1;
+        const new_company_ind = `CP${new_company_number.toString().padStart(4, '0')}`;
 
         if (user_company?.company_id == null){
 
@@ -85,7 +99,7 @@ export const admin_complete_signup = async(req: CustomRequest, res: Response, ne
             req.body.updated_at = converted_datetime()
     
             const create_company = await prisma.company.create({ 
-                data: {company_name, company_address, company_phone, organization_size, created_at: converted_datetime(), updated_at: converted_datetime()} 
+                data: {company_ind: new_company_ind, company_name, company_address, company_phone, organization_size, created_at: converted_datetime(), updated_at: converted_datetime()} 
             })
 
             const updated_admin_model = await prisma.user.update({

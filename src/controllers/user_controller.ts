@@ -14,13 +14,19 @@ export const create_new_user = async(req: CustomRequest, res: Response, next: Ne
 
         const user_id = req.user.user_id
 
-        const [admin_user, available_admin_users] = await Promise.all ([
+        const [admin_user, available_admin_users, last_user] = await Promise.all ([
             prisma.user.findUnique({ where: {user_id }, include: {company: true}}),
         
-            prisma.user.count({where: {user_role: 'admin'}})
+            prisma.user.count({where: {user_role: 'admin'}}),
+
+            prisma.user.findFirst({orderBy: {created_at: 'desc'}})
         ])
 
+        const last_user_number = last_user ? parseInt(last_user.user_ind.slice(2)) : 0;
+        const new_user_number = last_user_number + 1;
+        const new_user_ind = `US${new_user_number.toString().padStart(4, '0')}`;
 
+        req.body.user_ind = new_user_ind
 
         const otp = generate_otp()
 

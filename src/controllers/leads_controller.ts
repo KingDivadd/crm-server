@@ -8,11 +8,22 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
     const {customer_name, address, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
     try {
 
-        const lead_exist = await prisma.lead.findFirst({
-            where: {email: req.body.email}
-        })
+        const [lead_exist, last_lead,  last_pipeline] = await Promise.all([
+            prisma.lead.findFirst({ where: {email: req.body.email} }),
+            prisma.lead.findFirst({ orderBy: {created_at: 'desc'}}),
+            prisma.sales_Pipeline.findFirst({ orderBy: {created_at: 'desc'}})
+        ]) 
 
         if (lead_exist){return res.status(400).json({err: 'Lead with selected email already exist.'})}
+
+        const last_lead_number = last_lead ? parseInt(last_lead.lead_ind.slice(2)) : 0;
+        const new_lead_number = last_lead_number + 1;
+        const new_lead_ind = `LD${new_lead_number.toString().padStart(4, '0')}`;
+        req.body.lead_ind = new_lead_ind
+
+        const last_pipeline_number = last_pipeline ? parseInt(last_pipeline.pipeline_ind.slice(2)) : 0;
+        const new_pipeline_number = last_pipeline_number + 1;
+        const new_pipeline_ind = `PL${new_pipeline_number.toString().padStart(4, '0')}`;
 
         const new_lead = await prisma.lead.create({
             data: {
@@ -22,7 +33,18 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
             }
         })
 
-        return res.status(201).json({msg: "Lead created successfully", lead: new_lead})
+        const new_sales_pipeline = await prisma.sales_Pipeline.create({
+            data: {
+                pipeline_ind: new_pipeline_ind,
+                lead_id: new_lead.lead_id, 
+                disposition: disposition, 
+                status: 'INITIAL_CONTACT',
+                created_at: converted_datetime(),
+                updated_at: converted_datetime()
+            }
+        });
+
+        return res.status(201).json({msg: "Lead and Sales Pipeline created successfully", lead: new_lead, pipeline: new_sales_pipeline});
 
     } catch (err:any) {
         console.log('Error occured while creating lead', err);
@@ -35,16 +57,49 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
     try {
         const {lead_id} = req.params
 
-        const new_lead = await prisma.lead.update({
-            where: {lead_id},
-            data: {
-                ...req.body,
+        const [updated_lead, pipeline, last_pipeline] = await Promise.all([
+            prisma.lead.update({
+                where: {lead_id},
+                data: {
+                    ...req.body,
+    
+                    updated_at: converted_datetime()
+                }
+            }),
+            prisma.sales_Pipeline.findFirst({ where: {lead_id}}),
+            prisma.sales_Pipeline.findFirst({ orderBy: {created_at: 'desc'}})
+        ])
 
+        const last_pipeline_number = last_pipeline ? parseInt(last_pipeline.pipeline_ind.slice(2)) : 0;
+        const new_pipeline_number = last_pipeline_number + 1;
+        const new_pipeline_ind = `PL${new_pipeline_number.toString().padStart(4, '0')}`;
+
+        if (pipeline){
+            const updated_pipeline = await prisma.sales_Pipeline.update({
+                where: { pipeline_id: pipeline.pipeline_id },
+                data: {
+                    disposition: disposition ?? pipeline.disposition,  // Update disposition if provided
+                    updated_at: converted_datetime()
+                }
+            });
+
+            return res.status(200).json({ msg: "Lead and Sales Pipeline updated successfully", lead: updated_lead, pipeline: updated_pipeline });
+        }
+
+        const new_sales_pipeline = await prisma.sales_Pipeline.create({
+            data: {
+                pipeline_ind: new_pipeline_ind,
+                lead_id: lead_id, 
+                disposition: disposition, 
+                status: 'NEGOTIATION',
+                created_at: converted_datetime(),
                 updated_at: converted_datetime()
             }
-        })
+        });
 
-        return res.status(201).json({msg: "Lead created successfully", lead: new_lead})
+
+
+        return res.status(201).json({msg: "Lead and pipeline created successfully", lead: update_lead, pipeline: new_sales_pipeline})
 
     } catch (err:any) {
         console.log('Error occured while updating lead', err);
@@ -158,9 +213,12 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
 
         // check lead disposition status
 
-        const [lead, job] = await Promise.all([
+        const [lead, job, pipeline, last_job, last_pipeline] = await Promise.all([
             prisma.lead.findUnique({ where: {lead_id} }),
-            prisma.job.findFirst({where: {lead_id}})
+            prisma.job.findFirst({where: {lead_id}}),
+            prisma.sales_Pipeline.findFirst({where: {lead_id}}),
+            prisma.job.findFirst({orderBy: {created_at: 'desc'}}),
+            prisma.sales_Pipeline.findFirst({orderBy: {created_at: 'desc'}})
         ]) 
 
         if (job){ return res.status(400).json({err: 'A job is already created for selected lead!'})}
@@ -169,16 +227,50 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
 
         if (lead.disposition == 'NOT_SOLD'){ return res.status(400).json({err: 'Selected lead not sold yet.'}) }
 
-        console.log(req.body);
-        
+        const last_pipeline_number = last_pipeline ? parseInt(last_pipeline.pipeline_ind.slice(2)) : 0;
+        const new_pipeline_number = last_pipeline_number + 1;
+        const new_pipeline_ind = `PL${new_pipeline_number.toString().padStart(4, '0')}`;
+
+        const last_job_number = last_job ? parseInt(last_job.job_ind.slice(2)) : 0;
+        const new_job_number = last_job_number + 1;
+        const new_job_ind = `JB${new_job_number.toString().padStart(4, '0')}`;
+
 
         const new_job = await prisma.job.create({
             data: {
-                lead: {connect: {lead_id}}, contract_amount: Number(contract_amount.replace(/,/g,'')), contract_date, cover_color, cover_size, engineering_received_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_received, engineering_status, engineering_submit_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_submitted, hoa_status: hoa_status, permit_approval_date: permit_status == 'NOT_REQUIRED' ? "": permit_approved_date, permit_submit_date: permit_status == 'NOT_REQUIRED' ? "": permit_sent_date, permit_status, updated_at: converted_datetime(), created_at: converted_datetime()
+                job_ind: new_job_ind, lead: {connect: {lead_id}}, contract_amount: Number(contract_amount.replace(/,/g,'')), contract_date, cover_color, cover_size, engineering_received_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_received, engineering_status, engineering_submit_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_submitted, hoa_status: hoa_status, permit_approval_date: permit_status == 'NOT_REQUIRED' ? "": permit_approved_date, permit_submit_date: permit_status == 'NOT_REQUIRED' ? "": permit_sent_date, permit_status, updated_at: converted_datetime(), created_at: converted_datetime()
             }
         })
 
-        return res.status(201).json({msg: "Job created successfully", job:new_job})
+        if (!new_job){
+            return res.status(500).json({err: 'Job was not created successfully.'})
+        }
+
+        let updated_pipeline;
+        updated_pipeline = await prisma.sales_Pipeline.update({
+            where: { pipeline_id: pipeline?.pipeline_id },
+            data: {
+                job_id: new_job.job_id,
+                contract_amount: Number(contract_amount),  // Update disposition if provided
+                updated_at: converted_datetime()
+            }
+        })
+
+        if (!pipeline){
+            updated_pipeline = await prisma.sales_Pipeline.create({
+                data: {
+                    pipeline_ind: new_pipeline_ind,
+                    lead_id: new_job.lead_id,
+                    job_id: new_job.job_id,
+                    contract_amount: Number(contract_amount),  // Update disposition if provided
+                    updated_at: converted_datetime(),
+                    created_at: converted_datetime()
+                }
+            })
+        }
+        
+        return res.status(201).json({msg: "Job created successfully", job:new_job, pipeline: updated_pipeline})
+
 
     } catch (err:any) {
         console.log('Error occured while creating job', err);
@@ -194,9 +286,11 @@ export const edit_job = async(req: CustomRequest, res: Response, next: NextFunct
         const {job_id} = req.params
 
 
-        const [job_exist, lead] = await Promise.all([
+        const [job_exist, lead, pipeline, last_pipeline] = await Promise.all([
             prisma.job.findUnique({ where: {job_id} }),
             prisma.lead.findUnique({ where: {lead_id} }),
+            prisma.sales_Pipeline.findFirst({ where: {lead_id} }),
+            prisma.sales_Pipeline.findFirst({orderBy: {created_at: 'desc'}})
         ]) 
 
         if (!job_exist) {
@@ -207,7 +301,9 @@ export const edit_job = async(req: CustomRequest, res: Response, next: NextFunct
 
         if (lead.disposition == 'NOT_SOLD'){ return res.status(400).json({err: 'Selected lead not sold yet.'}) }
 
-        console.log(req.body);
+        const last_pipeline_number = last_pipeline ? parseInt(last_pipeline.pipeline_ind.slice(2)) : 0;
+        const new_pipeline_number = last_pipeline_number + 1;
+        const new_pipeline_ind = `PL${new_pipeline_number.toString().padStart(4, '0')}`;
 
 
         const new_job = await prisma.job.update({
@@ -218,8 +314,33 @@ export const edit_job = async(req: CustomRequest, res: Response, next: NextFunct
                 contract_amount: Number(contract_amount.replace(/,/g,'')), contract_date, cover_color, cover_size, engineering_received_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_received, engineering_status, engineering_submit_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_submitted, hoa_status: hoa_status, permit_approval_date: permit_status == 'NOT_REQUIRED' ? "": permit_approved_date, permit_submit_date: permit_status == 'NOT_REQUIRED' ? "": permit_sent_date, permit_status, updated_at: converted_datetime(), created_at: converted_datetime()
             }
         })
+      
+        let new_pipeline;
+        if (pipeline) {
+            new_pipeline = await prisma.sales_Pipeline.update({
+                where: { pipeline_id: pipeline?.pipeline_id },
+                data: {
+                    job_id: job_id,
+                    contract_amount: Number(contract_amount),  // Update disposition if provided
+                    updated_at: converted_datetime()
+                }
+            })
 
-        return res.status(201).json({msg: "Job updated successfully", job:new_job})
+        }else{
+            await prisma.sales_Pipeline.create({
+                data: {
+                    pipeline_ind: new_pipeline_ind,
+                    lead_id: new_job.lead_id,
+                    job_id: new_job.job_id,
+                    contract_amount: Number(contract_amount),  // Update disposition if provided
+                    updated_at: converted_datetime(),
+                    created_at: converted_datetime()
+                }
+            })
+        }
+       
+        return res.status(200).json({ msg: "Job and Sales Pipeline updated successfully" });
+
 
     } catch (err:any) {
         console.log('Error occured while updating jobs', err);
@@ -294,13 +415,18 @@ export const delete_job = async(req: CustomRequest, res: Response, next: NextFun
 export const create_task = async(req: CustomRequest, res: Response, next: NextFunction)=>{
     const {job_id, description, status, start_date, due_date, note, assigned_to} = req.body
     try {
-        console.log(req.user.user_role);
         
         if (req.user.user_role !== 'operation'){ return res.status(401).json({err: `You're not authorized to create task.`}) }
 
+        const last_task = await prisma.task.findFirst({orderBy: {created_at: "desc"}})
+
+        const last_task_number = last_task ? parseInt(last_task.task_ind.slice(2)) : 0;
+        const new_task_number = last_task_number + 1;
+        const new_task_ind = `TS${new_task_number.toString().padStart(4, '0')}`;
+        
         const new_task = await prisma.task.create({
             data: {
-                job_id, description, start_date, due_date, note: note,status, assigned_to,
+                task_ind: new_task_ind, job_id, description, start_date, due_date, note, status, assigned_to,
                 created_at: converted_datetime(),
                 updated_at: converted_datetime()
             }
@@ -315,8 +441,24 @@ export const create_task = async(req: CustomRequest, res: Response, next: NextFu
 }
 
 export const edit_task = async(req: CustomRequest, res: Response, next: NextFunction)=>{
+    const {job_id, description, status, start_date, due_date, note, assigned_to} = req.body
+
     try {
-        if (req.user.user_role !== 'admin' || req.user.user_role !== 'ops'){ return res.status(401).json({err: `You're not authorized to delete job, contact the admin.`}) }
+        
+        if (req.user.user_role !== 'operation'){ return res.status(401).json({err: `You're not authorized to perform this function.`}) }
+
+        const {task_id} = req.params
+
+        const new_task = await prisma.task.update({
+            where: {task_id},
+            data: {
+                job_id, description, start_date, due_date, note, status, assigned_to,
+                updated_at: converted_datetime()
+            }
+        })
+
+        return res.status(201).json({msg: 'Task created successfully ', task: new_task })
+
         
     } catch (err:any) {
         console.log('Error occured while creating task ', err);
@@ -351,27 +493,55 @@ export const all_tasks = async(req: CustomRequest, res: Response)=>{
     }
 }
 
+// ------------------------------------------------------------------SALES PIPELINE PAGE--------------------------------------------------------
+
+export const all_pipeline = async(req: CustomRequest, res: Response)=>{
+    try {
+        
+        const {page_number} = req.params
+
+        const [number_of_pipelines, pipeline] = await Promise.all([
+
+            prisma.sales_Pipeline.count({}),
+            prisma.sales_Pipeline.findMany({ include: {lead: {include: {assigned_to: true}}, job: true}, skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } }),
+
+        ])
+
+        const number_of_pipeline_pages = (number_of_pipelines <= 15) ? 1 : Math.ceil(number_of_pipelines / 15)
+
+        return res.status(200).json({
+            msg: 'All Sales Pipeline ', 
+            total_number_of_pipeline: number_of_pipelines,
+            total_number_of_pipeline_pages: number_of_pipeline_pages,
+            pipeline: pipeline,
+        })
+
+    } catch (err:any) {
+        console.log('Error fetching all sales pipeline ', err);
+        return res.status(500).json({err: 'Error fetching all sales pipeline ', error: err})
+    }
+}
+
 export const sales_pipeline_page = async(req: CustomRequest, res: Response, next :NextFunction)=>{
     try {
 
-        const [total_lead, total_sales, sales_Pipeline] = await Promise.all([
+        const [total_lead, lead_sold, jobs, lead_in_progress] = await Promise.all([
             prisma.lead.count({}),
 
-            prisma.sale.findMany({}),
+            prisma.lead.count({where: {disposition: 'SOLD'}}),
 
-            prisma.sales_Pipeline.findMany({})
+            prisma.job.findMany({select: {contract_amount: true}}),
+
+            prisma.lead.findMany({ where: {disposition: 'IN_PROGRESS' }})
             
         ])
 
-        const conversion_rate = (total_sales.length / total_lead) * 100
-
-        let total_sales_amount;
-
-        if (total_sales) {
-            total_sales_amount = total_sales.reduce((accumulator, currentValue) => accumulator + currentValue.contract_amount, 0);
+        let total_contract_amount;
+        if (jobs){
+            total_contract_amount = jobs.reduce((accumulator, currentValue) => accumulator + currentValue.contract_amount, 0);
         }
 
-        return res.status(200).json({total_lead, total_sales, conversion_rate, sales_Pipeline, total_sales_amount: total_sales_amount || 0})
+        return res.status(200).json({total_lead, lead_sold, total_contract_amount, lead_in_progress: lead_in_progress || 0 })
         
     } catch (err:any) {
         console.log('Error while fetching sales pipeline page info ', err);
