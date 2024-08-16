@@ -23,6 +23,7 @@ import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification } from '../controllers/notification_controller'
 import { all_jobs, all_lead, all_pipeline, all_tasks, create_job, create_lead, create_task, delete_job, delete_lead, edit_job, edit_task, filter_lead, installation_overview, job_contract_overview, jobs, leads, project_information, sales_pipeline_page, update_lead } from '../controllers/leads_controller'
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
+import { sales_report_page_info } from '../controllers/report'
 
 
 
@@ -117,6 +118,10 @@ router.route('/all-tasks/:page_number').get(verify_auth_id, all_tasks)
 // Sales Pipeline
 
 router.route('/all-pipeline/:page_number').get(verify_auth_id, all_pipeline )
+
+// Sales Report
+
+router.route('/report-dashboard/:page_number').get(verify_auth_id, sales_report_page_info)
 
 // Test route
 

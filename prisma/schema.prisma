@@ -43,20 +43,22 @@ model User {
   active_status                           Boolean          @default(true)
   avatar                                  String?          @default(value: "")
 
-  // company information
   company                                 Company?         @relation(fields: [company_id], references: [company_id])
   company_id                              String?
+
   leads                                   Lead[]
   sales                                   Sale[]
   installations                           Installation[]
   activities                              Activity[]
-  notifications                           Notification[]
+
   designers                               Designer[]
   service_ticket                          Service_Ticket[]
   task_notifications                      Task_Notification[]
   jobs                                    Job[]
   
   created_tasks                           Task[]    @relation("Created_Tasks")
+  source                                  Notification[]    @relation("source")
+  user                                    Notification[]    @relation("user")
 
 
   created_at                              Decimal
@@ -80,6 +82,8 @@ model Lead {
   sales                                   Sale[]
   designer                                Designer[]
   sales_Pipelines                         Sales_Pipeline[]
+  notifications                           Notification[]
+
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -323,14 +327,28 @@ model Contract_Doc {
 model Notification {
   notification_id                         String           @id @default(uuid()) @unique
   notification_ind                        String       @unique
+
+  subject                                 String
   message                                 String
   read                                    Boolean  @default(false)
 
-  user                                    User?     @relation(fields: [user_id], references: [user_id])
+  source                                  User?     @relation("source", fields: [source_id], references: [user_id])
+  source_id                               String?
+
+  user                                    User?     @relation("user", fields: [user_id], references: [user_id])
   user_id                                 String?
 
   sale                                    Sale?     @relation(fields: [sale_id], references: [sale_id])
   sale_id                                 String?
+
+  lead                                    Lead?     @relation(fields: [lead_id], references: [lead_id])
+  lead_id                                 String?
+
+  task                                    Task?     @relation(fields: [task_id], references: [task_id])
+  task_id                                 String?
+
+  job                                     Job?     @relation(fields: [job_id], references: [job_id])
+  job_id                                  String?
 
   designer                                Designer?     @relation(fields: [designer_id], references: [designer_id])
   designer_id                             String?
@@ -338,9 +356,6 @@ model Notification {
   installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
   installation_id                         String?
 
-
-  job                                     Job?       @relation(fields: [job_id], references: [job_id])
-  job_id                                  String?
 
 
   created_at                              Decimal
@@ -473,11 +488,12 @@ model Job {
   payments                                Payment[]
   invoices                                Invoice[]
   activities                              Activity[]
-  notifications                           Notification[]
   installations                           Installation[]
   task_notifications                      Task_Notification[]
   tasks                                   Task[]
   sales_Pipelines                         Sales_Pipeline[]
+  notifications                           Notification[]
+
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -525,6 +541,8 @@ model Task {
 
   job                                     Job?      @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
+  notifications                           Notification[]
+
 
   created_at                              Decimal
   updated_at                              Decimal
