@@ -2,7 +2,9 @@ import { Request, Response, NextFunction } from 'express'
 import prisma from '../helpers/prisma'
 import { CustomRequest } from '../helpers/interface'
 import converted_datetime from '../helpers/date_time_elemets'
-
+import { send_job_created_email, send_lead_created_email, send_lead_sold_email } from '../helpers/email'
+import { salt_round } from '../helpers/constants'
+const bcrypt = require('bcrypt')
 
 export const create_lead = async(req: CustomRequest, res: Response, next: NextFunction)=>{
     const {customer_name, address, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
@@ -66,6 +68,12 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
 
         ])
 
+        const [first_name, last_name] = customer_name.split(' ')
+        const user = {first_name: first_name, last_name: last_name || ''}
+        send_lead_created_email(user)
+        console.log('customer_name ', user);
+        
+
         return res.status(201).json({msg: "Lead and Sales Pipeline created successfully", lead: new_lead, pipeline: new_sales_pipeline});
 
     } catch (err:any) {
@@ -82,7 +90,7 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
         
         const {lead_id} = req.params
 
-        const [updated_lead, pipeline, last_pipeline, last_notification] = await Promise.all([
+        const [updated_lead, pipeline, last_pipeline, last_notification, last_user] = await Promise.all([
             prisma.lead.update({
                 where: {lead_id},
                 data: {
@@ -92,9 +100,10 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
                 }
             }),
 
-            prisma.sales_Pipeline.findFirst({ where: {lead_id}}),
-            prisma.sales_Pipeline.findFirst({ orderBy: {created_at: 'desc'}}),
-            prisma.notification.findFirst({ orderBy: {created_at: 'desc'}})
+            prisma.sales_Pipeline.findFirst({ where: {lead_id}, select: {pipeline_id: true, disposition: true}}),
+            prisma.sales_Pipeline.findFirst({select: { pipeline_ind:true}, orderBy: {created_at: 'desc'}}),
+            prisma.notification.findFirst({select: { notification_ind:true}, orderBy: {created_at: 'desc'}}),
+            prisma.user.findFirst({select: { user_ind:true}, orderBy: {created_at: 'desc'}}),
         ])
 
         const last_pipeline_number = last_pipeline ? parseInt(last_pipeline.pipeline_ind.slice(2)) : 0;
@@ -104,6 +113,31 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
         const last_notification_number = last_notification ? parseInt(last_notification.notification_ind.slice(2)) : 0;
         const new_notification_number = last_notification_number + 1;
         const new_notification_ind = `NT${new_notification_number.toString().padStart(4, '0')}`;
+
+        const last_user_number = last_user ? parseInt(last_user.user_ind.slice(2)) : 0;
+        const new_user_number = last_user_number + 1;
+        const new_user_ind = `US${new_user_number.toString().padStart(4, '0')}`;
+
+        if (disposition == 'SOLD') {
+            const encrypted_password = await bcrypt.hash('password', salt_round);
+            const [first_name, last_name] = customer_name.split(' ');
+            const new_user = await prisma.user.create({
+
+                data: {
+                    user_ind: new_user_ind,
+                    first_name: first_name,
+                    last_name: last_name  || '',
+                    user_role: 'customer',
+                    phone_number, password: encrypted_password,email,
+                    created_at: converted_datetime(),
+                    updated_at: converted_datetime()
+                }
+            })
+
+            await prisma.lead.update({ where: {lead_id}, data: {customer_id: new_user.user_id} })
+
+            send_lead_sold_email(new_user)
+        }
 
         if (pipeline){
             const [updated_pipeline, notification] = await Promise.all([
@@ -159,7 +193,7 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
                 updated_at: converted_datetime()
             }
         })
-        ]) 
+        ])
         
 
         return res.status(201).json({msg: "Lead and pipeline created successfully", lead: update_lead, pipeline: new_sales_pipeline})
@@ -356,6 +390,8 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
                 }
             })
         }
+
+        // send_job_created_email()
         
         return res.status(201).json({msg: "Job created successfully", job:new_job, pipeline: updated_pipeline})
 

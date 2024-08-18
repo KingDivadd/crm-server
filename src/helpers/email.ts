@@ -756,3 +756,201 @@ export const test_email = (receiver_email:string) => {
     });
 
 }
+
+
+
+// Setup the email transporter
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: email_username,
+        pass: email_passowrd,
+    },
+});
+
+// Email for when the lead is created
+export const send_lead_created_email = (user: any) => {
+    const html_content = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your Lead Has Been Created</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                h1 { color: #333; }
+                p { color: #555; line-height: 1.6; }
+                a { color: #0066cc; text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Hi ${user.first_name}, Your Lead Has Been Created!</h1>
+                <p>Thank you for your interest. Our team will follow up with you soon to discuss further details.</p>
+                <p>If you have any questions, feel free to reach out to us at <a href="mailto:support@crmwebapp.com">support@crmwebapp.com</a>.</p>
+                <p>Best regards,</p>
+                <p>The CRM Web App Team</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    const mail_options = {
+        from: { name: "CRM", address: 'iroegbu.dg@gmail.com' },
+        to: user.email,
+        subject: "Lead Created",
+        html: html_content,
+        text: 'Your Lead Has Been Created',
+    };
+
+    transporter.sendMail(mail_options, function(error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(`Lead created email sent to ${user.email}`.cyan.bold);
+        }
+    });
+};
+
+// Email for when the lead has been sold 
+export const send_lead_sold_email = (user: any) => {
+    const html_content = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your Lead Has Been Sold</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                h1 { color: #333; }
+                p { color: #555; line-height: 1.6; }
+                a { color: #0066cc; text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Hi ${user.first_name}, Congratulations! Your Lead Has Been Sold!</h1>
+                <p>Your lead has been successfully sold. Thank you for choosing us!</p>
+                <p>Our team is now working on creating the project. We will notify you once the job has been created and provide further details on the next steps.</p>
+                <p>If you have any questions, feel free to reach out to us at <a href="mailto:support@crmwebapp.com">support@crmwebapp.com</a>.</p>
+                <p>Best regards,</p>
+                <p>The CRM Web App Team</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    const mail_options = {
+        from: { name: "CRM", address: 'iroegbu.dg@gmail.com' },
+        to: user.email,
+        subject: "Lead Sold Notification",
+        html: html_content,
+        text: 'Congratulations! Your Lead Has Been Sold!',
+    };
+
+    transporter.sendMail(mail_options, function(error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(`Lead sold email sent to ${user.email}`.cyan.bold);
+        }
+    });
+};
+
+export const send_job_created_email = (user: any) => {
+    const html_content = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your Job Has Been Created</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                h1 { color: #333; }
+                p { color: #555; line-height: 1.6; }
+                a { color: #0066cc; text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Hi ${user.first_name}, Your Job Has Been Created!</h1>
+                <p>We are pleased to inform you that your job has been successfully created. Our operations team is now working on your project.</p>
+                <p>You can log in to your customer portal to track the progress and view the status of your job.</p>
+                <p>If you have any questions, feel free to reach out to us at <a href="mailto:support@crmwebapp.com">support@crmwebapp.com</a>.</p>
+                <p>Best regards,</p>
+                <p>The CRM Web App Team</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    const mail_options = {
+        from: { name: "CRM", address: 'iroegbu.dg@gmail.com' },
+        to: user.email,
+        subject: "Job Created Notification",
+        html: html_content,
+        text: 'Your Job Has Been Created!',
+    };
+
+    transporter.sendMail(mail_options, function(error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(`Job created email sent to ${user.email}`.cyan.bold);
+        }
+    });
+};
+
+
+// Email for when the lead is marked as not sold
+export const send_lead_not_sold_email = (user: any) => {
+    const html_content = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Your Lead Has Been Updated</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                h1 { color: #333; }
+                p { color: #555; line-height: 1.6; }
+                a { color: #0066cc; text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Hi ${user.first_name}, Unfortunately, Your Lead Was Not Converted</h1>
+                <p>We regret to inform you that your lead did not result in a sale. However, we're still here to assist you if you have further questions or would like to explore other services.</p>
+                <p>If you have any questions, feel free to reach out to us at <a href="mailto:support@crmwebapp.com">support@crmwebapp.com</a>.</p>
+                <p>Best regards,</p>
+                <p>The CRM Web App Team</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    const mail_options = {
+        from: { name: "CRM", address: 'iroegbu.dg@gmail.com' },
+        to: user.email,
+        subject: "Lead Not Sold",
+        html: html_content,
+        text: 'Your Lead Was Not Converted',
+    };
+
+    transporter.sendMail(mail_options, function(error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(`Lead not sold email sent to ${user.email}`.cyan.bold);
+        }
+    });
+};
+

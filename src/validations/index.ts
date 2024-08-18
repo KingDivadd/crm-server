@@ -240,12 +240,39 @@ export const update_settings_validation = async (req: Request, res: Response, ne
 
         const schema = Joi.object({
             company_logo: Joi.string().trim().allow('').optional(),
-            company_name: Joi.string().trim().allow('').required(),
-            company_address: Joi.string().trim().allow('').required(),
+            company_name: Joi.string().trim().allow('').optional(),
+            company_address: Joi.string().trim().allow('').optional(),
             company_email: Joi.string().trim().allow('').optional(),
-            company_phone: Joi.array().items(Joi.string().required()).required(),
-            number_of_admin: Joi.number().required(),
+            company_phone: Joi.array().items(Joi.string().optional()).optional(),
+            number_of_admin: Joi.number().optional(),
 
+            avatar: Joi.string().trim().allow('').required(),
+            first_name: Joi.string().trim().allow('').required(),
+            last_name: Joi.string().trim().allow('').optional(),
+            other_names: Joi.string().trim().allow('').optional(),
+            email: Joi.string().trim().allow('').optional(),
+            phone_number: Joi.string().trim().allow('').required(),
+            password: Joi.string().trim().allow('').required(),
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating system settings input ',error })
+    }
+}
+
+export const settings_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+
+        const schema = Joi.object({
             avatar: Joi.string().trim().allow('').required(),
             first_name: Joi.string().trim().allow('').required(),
             last_name: Joi.string().trim().allow('').optional(),

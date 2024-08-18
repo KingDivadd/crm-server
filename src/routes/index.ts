@@ -10,7 +10,8 @@ import {admin_complete_signup, admin_signup, generate_user_otp, reset_password, 
     logged_in_admin,
     resend_otp,
     get_user_info,
-    main_sales_dashboard} from '../controllers/authentication'
+    main_sales_dashboard,
+    logged_in_user} from '../controllers/authentication'
 
 import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_job_validation, create_lead_validation, create_task_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_settings_validation, update_user_validation, verify_otp_validation} from '../validations/index'
 
@@ -20,7 +21,7 @@ import {test_connection, test_db_connection} from "../controllers/test_server_co
 
 import { admin_change_user_data, admin_delete_user_data, all_sales_staff, change_user_activity_status, create_new_user } from '../controllers/user_controller'
 import { all_activity } from '../controllers/activity_controller'
-import { all_notification, all_task_notification, filter_task_notification } from '../controllers/notification_controller'
+import { all_notification, all_task_notification, filter_task_notification, update_notification } from '../controllers/notification_controller'
 import { all_jobs, all_lead, all_pipeline, all_tasks, create_job, create_lead, create_task, delete_job, delete_lead, edit_job, edit_task, filter_lead, installation_overview, job_contract_overview, jobs, leads, project_information, sales_pipeline_page, update_lead } from '../controllers/leads_controller'
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 import { sales_report_page_info } from '../controllers/report'
@@ -31,6 +32,8 @@ const router = express.Router()
 
 
 // Authentication
+
+router.route('/logged-in-user').get(verify_auth_id, logged_in_user)
 
 router.route('/admin-signup').post(admin_signup_validation, email_exist , admin_signup)
 
@@ -75,6 +78,8 @@ router.route('/all-activities/:page_number').get(verify_auth_id, all_activity)
 
 // Notification
 
+router.route('/update-notification-status/:notification_id').patch(verify_auth_id, update_notification)
+
 router.route('/all-notifications/:page_number').get(verify_auth_id, all_notification)
 
 router.route('/all-task-notifications/:page_number').get(verify_auth_id, all_task_notification)
@@ -83,7 +88,7 @@ router.route('/filter-task-notifications/:status/:page_number').get(verify_auth_
 
 // Lead
 
-router.route('/create-lead').post(verify_auth_id, create_lead_validation, create_lead)
+router.route('/create-lead').post(verify_auth_id, create_lead_validation, email_exist, create_lead)
 
 router.route('/edit-lead/:lead_id').patch(verify_auth_id, create_lead_validation, update_lead)
 
@@ -134,6 +139,9 @@ router.route('/test-db-connection').get(test_db_connection)
 router.route('/settings-info').get(verify_auth_id, get_settings_information)
 
 router.route('/update-settings-info').patch(verify_auth_id, update_settings_validation, update_settings_information)
+
+// router.route('/update-settings').patch(verify_auth_id, settings_validation, )
+
 
 // Sales Department
 
