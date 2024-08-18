@@ -262,12 +262,15 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
                     pipeline_ind: new_pipeline_ind,
                     lead_id: new_job.lead_id,
                     job_id: new_job.job_id,
-                    contract_amount: Number(contract_amount),  // Update disposition if provided
+                    contract_amount: Number(contract_amount),  
                     updated_at: converted_datetime(),
                     created_at: converted_datetime()
                 }
             })
         }
+
+        console.log(updated_pipeline);
+        
         
         return res.status(201).json({msg: "Job created successfully", job:new_job, pipeline: updated_pipeline})
 
