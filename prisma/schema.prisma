@@ -356,6 +356,9 @@ model Notification {
   job                                     Job?     @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
 
+  project                                 Project?     @relation(fields: [project_id], references: [project_id])
+  project_id                              String?
+
   designer                                Designer?     @relation(fields: [designer_id], references: [designer_id])
   designer_id                             String?
 
@@ -484,6 +487,7 @@ model Job {
   engineering_status                      EngineeringStatus
 
   permit_submit_date                      String?
+  permit_number                           String?    @default(value: "")
   permit_approval_date                    String?
   permit_status                           PermitStatus?
   cover_color                             String?
@@ -562,25 +566,48 @@ enum Task_Status {
 
 model Project {
   project_id                              String      @id @default(uuid()) @unique
-  project_ind                             String       @unique
+  project_ind                             String      @unique
+  
+  job                                     Job        @relation(fields: [job_id], references: [job_id])
+  job_id                                  String
 
-  job                                     Job?        @relation(fields: [job_id], references: [job_id])
-  job_id                                  String?
-
-  sale                                    Sale?        @relation(fields: [sale_id], references: [sale_id])
+  sale                                    Sale?       @relation(fields: [sale_id], references: [sale_id])
   sale_id                                 String?
 
-  progress_tracker                        Installation?        @relation(fields: [progress_tracker_id], references: [installation_id])
+  progress_tracker                        Installation? @relation(fields: [progress_tracker_id], references: [installation_id])
   progress_tracker_id                     String?
 
   attached                                Boolean
   structure_type                          StructureType
-  cover_size                              String
-  end_cap_style                           String
-  cover_color                             String
-  trim_color                              String
-  
+  description                             String?
+  cover_size                              String?
+  end_cap_style                           String?
+  cover_color                             String?
+  trim_color                              String?
 
+  // Contract Details
+  contract_amount                         Float?
+  contract_date                           String?
+
+  permit_number                           String?
+
+  // Document Attachments
+  attachments                             Attachment[]  @relation("ProjectAttachments")
+  sales_Pipelines                         Sales_Pipeline[]
+  notifications                           Notification[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Attachment {
+  attachment_id                           String      @id @default(uuid()) @unique
+  attachment_ind                            String       @unique
+
+  project                                 Project     @relation("ProjectAttachments", fields: [project_id], references: [project_id])
+  project_id                              String
+  file_url                                String
+  
   created_at                              Decimal
   updated_at                              Decimal
 }
@@ -592,7 +619,10 @@ enum StructureType {
   FLAT_PAN
   LOUVER
   HYBRID
+  OTHER
 }
+
+
 
 model Sales_Pipeline {
   pipeline_id                             String       @id @default(uuid()) @unique
@@ -603,6 +633,9 @@ model Sales_Pipeline {
 
   job                                     Job?         @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
+
+  project                                 Project?         @relation(fields: [project_id], references: [project_id])
+  project_id                              String?
   
   disposition                             Disposition? // Enum for Sold/Not Sold/Other dispositions
   
@@ -610,7 +643,6 @@ model Sales_Pipeline {
   
   project_type                            String?       // Type of project (e.g., Freestanding, Lattice)
   status                                  SalesStatus?  // Enum to track the sales pipeline status (e.g., In Progress, Sold, Lost)
-  project_id                              String?      // If sold, references the associated project ID
   
   notes                                   Note[]       // Array of notes for additional tracking or comments
   

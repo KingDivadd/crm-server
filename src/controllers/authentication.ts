@@ -364,10 +364,11 @@ export const main_sales_dashboard = async(req: CustomRequest, res: Response, nex
             prisma.task.count({}),
             
             prisma.lead.findMany({include: {assigned_to: true }, take: 15, orderBy: {created_at: 'desc'}}),
-            prisma.task.findMany({ take: 15, orderBy: {created_at: 'desc'}}),
+            prisma.task.findMany({include: {job: {select: {job_ind: true}}}, take: 15, orderBy: {created_at: 'desc'}}),
             prisma.notification.findMany({include: {source: true, user: true , lead: true, job: true, task: true}, take: 15, orderBy: {created_at: 'desc'} })
 
         ])
+        
 
         return res.status(200).json({total_lead, converted_lead, total_job, total_task, recent_lead, recent_tasks, recent_notifications })
         

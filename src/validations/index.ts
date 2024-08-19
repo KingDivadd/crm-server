@@ -336,8 +336,17 @@ export const create_job_validation = async (req: Request, res: Response, next: N
             permit_status: Joi.string().trim().allow('').optional(),
             permit_sent_date: Joi.string().trim().allow('').optional(),
             permit_approved_date: Joi.string().trim().allow('').optional(),
+            hoa_sent_date: Joi.string().trim().allow('').optional(),
+            hoa_approval_date: Joi.string().trim().allow('').optional(),
             cover_size: Joi.string().trim().allow('').optional(),
             cover_color: Joi.string().trim().allow('').optional(),
+            attached: Joi.boolean().optional(),
+            structure_type: Joi.string().trim().allow('').optional(),
+            description: Joi.string().trim().allow('').optional(),
+            end_cap_style: Joi.string().trim().allow('').optional(),
+            trim_color: Joi.string().trim().allow('').optional(),
+            permit_number: Joi.string().trim().allow('').optional(),
+            
 
         })
 

@@ -22,9 +22,12 @@ import {test_connection, test_db_connection} from "../controllers/test_server_co
 import { admin_change_user_data, admin_delete_user_data, all_sales_staff, change_user_activity_status, create_new_user } from '../controllers/user_controller'
 import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification, update_notification } from '../controllers/notification_controller'
-import { all_jobs, all_lead, all_pipeline, all_tasks, create_job, create_lead, create_task, delete_job, delete_lead, edit_job, edit_task, filter_lead, installation_overview, job_contract_overview, jobs, leads, project_information, sales_pipeline_page, update_lead } from '../controllers/leads_controller'
+import { all_lead, create_lead, delete_lead, filter_lead, installation_overview, job_contract_overview, leads, project_information, update_lead } from '../controllers/leads_controller'
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 import { sales_report_page_info } from '../controllers/report'
+import { create_job, edit_job, all_jobs, jobs, delete_job } from '../controllers/job_controller'
+import { all_pipeline, sales_pipeline_page } from '../controllers/sales_pipeline_controller'
+import { create_task, edit_task, all_tasks } from '../controllers/task_controller'
 
 
 
