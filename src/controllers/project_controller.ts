@@ -14,7 +14,7 @@ export const customer_dashboard = async(req: CustomRequest, res: Response)=>{
         const [projects,  running_project, notifications] = await Promise.all([
             prisma.project.findMany({}),
             prisma.project.findMany({include: {job: {select: {job_ind: true}}}, take: 15 }),
-            prisma.notification.findMany({ take: 15 }),
+            prisma.notification.findMany({include: {source: true}, take: 15 }),
         ])
 
         const total_project = projects.length
