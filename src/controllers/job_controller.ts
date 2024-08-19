@@ -44,7 +44,7 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
 
         const last_project_number = last_project ? parseInt(last_project.project_ind.slice(2)) : 0;
         const new_project_number = last_project_number + 1;
-        const new_project_ind = `NT${new_project_number.toString().padStart(4, '0')}`;
+        const new_project_ind = `PJ${new_project_number.toString().padStart(4, '0')}`;
 
         const new_job = await prisma.job.create({
             data: {

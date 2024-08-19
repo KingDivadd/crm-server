@@ -585,6 +585,7 @@ model Project {
   cover_color                             String?
   trim_color                              String?
 
+  status                                  ProjectStatus @default(PENDING)
   // Contract Details
   contract_amount                         Float?
   contract_date                           String?
@@ -598,6 +599,14 @@ model Project {
 
   created_at                              Decimal
   updated_at                              Decimal
+}
+
+enum ProjectStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELLED
 }
 
 model Attachment {

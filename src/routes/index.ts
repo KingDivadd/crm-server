@@ -28,6 +28,7 @@ import { sales_report_page_info } from '../controllers/report'
 import { create_job, edit_job, all_jobs, jobs, delete_job } from '../controllers/job_controller'
 import { all_pipeline, sales_pipeline_page } from '../controllers/sales_pipeline_controller'
 import { create_task, edit_task, all_tasks } from '../controllers/task_controller'
+import { customer_dashboard } from '../controllers/project_controller'
 
 
 
@@ -158,9 +159,9 @@ router.route('/project-information/:page_number').get(verify_auth_id, project_in
 
 router.route('/project-progress-tracking/:page_number').get(verify_auth_id, installation_overview)
 
+// Customer Dept
 
-
-
+router.route('/customer-dashboard').get(verify_auth_id, customer_dashboard)
 
 
 
