@@ -14,17 +14,24 @@ export const create_new_user = async(req: CustomRequest, res: Response, next: Ne
 
         const user_id = req.user.user_id
 
-        const [admin_user, available_admin_users, last_user] = await Promise.all ([
+        const [admin_user, available_admin_users, last_user, last_notification] = await Promise.all ([
             prisma.user.findUnique({ where: {user_id }, include: {company: true}}),
         
             prisma.user.count({where: {user_role: 'admin'}}),
 
-            prisma.user.findFirst({orderBy: {created_at: 'desc'}})
+            prisma.user.findFirst({orderBy: {created_at: 'desc'}}),
+
+            prisma.notification.findFirst({orderBy: {created_at: 'desc'}})
         ])
+
+        const last_notification_number = last_notification ? parseInt(last_notification.notification_ind.slice(2)) : 0;
+        const new_notification_number = last_notification_number + 1;
+        const new_notification_ind = `NT${new_notification_number.toString().padStart(4, '0')}`;
 
         const last_user_number = last_user ? parseInt(last_user.user_ind.slice(2)) : 0;
         const new_user_number = last_user_number + 1;
         const new_user_ind = `US${new_user_number.toString().padStart(4, '0')}`;
+        
 
         req.body.user_ind = new_user_ind
 
@@ -43,6 +50,20 @@ export const create_new_user = async(req: CustomRequest, res: Response, next: Ne
         }
 
         const create_user = await prisma.user.create({data: req.body })
+
+        if (create_user){
+            await prisma.notification.create({
+                data: {
+                    notification_ind: new_notification_ind,
+                    message: `Your account has been successfully created.`,
+                    subject: `Welcome to the CRM.`,
+                    user_id: create_user.user_id,
+                    source_id: req.user.user_id,
+                    created_at: converted_datetime(),
+                    updated_at: converted_datetime()
+                }
+            })
+        }
 
         await redis_otp_store(req.body.email, otp, 'unverified', 60 * 60 * 2/6)
 

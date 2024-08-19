@@ -8,7 +8,25 @@ import { CustomRequest } from '../helpers/interface'
 import converted_datetime from '../helpers/date_time_elemets'
 const bcrypt = require('bcrypt')
 
+export const logged_in_user = async(req: CustomRequest, res: Response)=>{
+    try {
 
+        const user_id = req.user.user_id
+
+        const [user, notification] = await Promise.all([
+            prisma.user.findFirst({where: {user_id}}),
+
+            prisma.notification.findMany({})
+        ])
+
+        return res.status(200).json({user, notification})
+        
+    } catch (err:any) {
+        console.log('Error occured while fetching user data', err);
+        return res.status(500).json({err:'Error occured while fetching user data', error:err});
+        
+    }
+}
 
 export const admin_signup = async(req:Request, res: Response, next: NextFunction)=>{
     const {last_name, first_name, email, password, phone_number} = req.body
@@ -339,20 +357,19 @@ export const main_sales_dashboard = async(req: CustomRequest, res: Response, nex
         const user_id = req.user.user_id
         if (req.user.user_role !== 'sales'){ return res.status(401).json({err: 'Dashboard information only meant for sales personnel ' })}
 
-        const [total_lead, total_sales, pending_task, recent_activities, recent_tasks, recent_notifications] = await Promise.all([
+        const [total_lead, converted_lead, total_job, total_task, recent_lead, recent_tasks, recent_notifications] = await Promise.all([
             prisma.lead.count({}),
-            prisma.sale.count({}),
-            prisma.task.count({where: {status: 'PENDING'}}),
-            prisma.activity.findMany({ take: 15, orderBy: {created_at: 'desc'} }),
+            prisma.lead.count({where: {disposition: 'SOLD'}}),
+            prisma.job.count({}),
+            prisma.task.count({}),
+            
+            prisma.lead.findMany({include: {assigned_to: true }, take: 15, orderBy: {created_at: 'desc'}}),
             prisma.task.findMany({ take: 15, orderBy: {created_at: 'desc'}}),
-            prisma.notification.findMany({ take: 15, orderBy: {created_at: 'desc'} })
+            prisma.notification.findMany({include: {source: true, user: true , lead: true, job: true, task: true}, take: 15, orderBy: {created_at: 'desc'} })
 
         ])
 
-        const conversion_rate = (total_sales / total_lead) * 100
-
-
-        return res.status(200).json({total_lead, total_sales, conversion_rate, pending_task, recent_activities, recent_notifications, recent_tasks })
+        return res.status(200).json({total_lead, converted_lead, total_job, total_task, recent_lead, recent_tasks, recent_notifications })
         
     } catch (err:any) {
         console.log('Error occured while fetching sales dashboard information : ', err);
