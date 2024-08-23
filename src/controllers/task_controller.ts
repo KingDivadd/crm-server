@@ -10,7 +10,7 @@ const bcrypt = require('bcrypt')
 // -----------------------------TASKS
 
 export const create_task = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    const {job_id, description, status, start_date, due_date, note, assigned_to} = req.body
+    const {job_id, description, status, start_date, due_date, note, task_assigned_to} = req.body
     try {
         
         if (req.user.user_role !== 'operation'){ return res.status(401).json({err: `You're not authorized to create task.`}) }
@@ -18,7 +18,7 @@ export const create_task = async(req: CustomRequest, res: Response, next: NextFu
         const [last_task, last_notification, job] = await Promise.all([
             prisma.task.findFirst({orderBy: {created_at: "desc"}}),
             prisma.notification.findFirst({orderBy: {created_at: 'desc'}}),
-            prisma.job.findUnique({where: {job_id}, include: {lead: {include: {assigned_to}}}})
+            prisma.job.findUnique({where: {job_id}, include: {lead: {include: { assigned_to:task_assigned_to}}}})
         ]) 
 
         const last_task_number = last_task ? parseInt(last_task.task_ind.slice(2)) : 0;
@@ -32,7 +32,8 @@ export const create_task = async(req: CustomRequest, res: Response, next: NextFu
         
         const new_task = await prisma.task.create({
             data: {
-                task_ind: new_task_ind, job_id, description, start_date, due_date, note, status, assigned_to,
+                task_ind: new_task_ind, job: {connect: {job_id}}, 
+                description, start_date, due_date, note, status, task_assigned_to: {connect: {user_id: task_assigned_to}},
                 created_at: converted_datetime(),
                 updated_at: converted_datetime()
             }
@@ -82,7 +83,7 @@ export const edit_task = async(req: CustomRequest, res: Response, next: NextFunc
         const update_task = await prisma.task.update({
             where: {task_id},
             data: {
-                job_id, description, start_date, due_date, note, status, assigned_to,
+                job_id, description, start_date, due_date, note, status, task_assigned_to: {connect: {user_id: assigned_to}},
                 updated_at: converted_datetime()
             }
         })
@@ -118,7 +119,7 @@ export const all_tasks = async(req: CustomRequest, res: Response)=>{
         const [number_of_tasks, tasks] = await Promise.all([
 
             prisma.task.count({}),
-            prisma.task.findMany({ include: {job: true, created_by: true}, skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } }),
+            prisma.task.findMany({ include: {job: true, created_by: true, task_assigned_to: true}, skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } }),
 
         ])
 

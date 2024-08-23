@@ -48,18 +48,25 @@ model User {
 
   leads                                   Lead[]         @relation("Assigned_to")
   customer                                Lead[]         @relation("Customer")
+  lead_adder                              Lead[]         @relation("LeadAdder")
+  project_adder                           Project[]         @relation("ProjectAdder")
+  job_adder                               Job[]         @relation("JobAdder")
   sales                                   Sale[]
   installations                           Installation[]
   activities                              Activity[]
 
   designers                               Designer[]
-  service_ticket                          Service_Ticket[]
+  created_by                              Service_Ticket[]     @relation("created_by")
+  updated_by                              Service_Ticket[]     @relation("updated_by")
   task_notifications                      Task_Notification[]
   jobs                                    Job[]
   
   created_tasks                           Task[]    @relation("Created_Tasks")
+  task_assigned                           Task[]    @relation("Task_Assigned")
+
   source                                  Notification[]    @relation("source")
   user                                    Notification[]    @relation("user")
+  inspected_by                            Inspection[]      @relation("ProjectInspector")
 
 
   created_at                              Decimal
@@ -80,6 +87,9 @@ model Lead {
 
   customer                                User?       @relation("Customer", fields: [customer_id], references: [user_id])
   customer_id                             String?
+
+  lead_adder                              User?         @relation("LeadAdder",fields: [lead_adder_id], references: [user_id])
+  lead_adder_id                           String?
 
   gate_code                               String
   appointment_date                        String
@@ -179,7 +189,7 @@ model Installation {
   electrical_date                         String?
   electrical_crew                         String?
   electrical_bill_sheet                   String?  // or any appropriate type
-  inspections                             Inspection[]
+  
   materials                               Material[]
   bill_sheets                             Bill_Sheet[]
   notifications                           Notification[]
@@ -198,17 +208,24 @@ enum Installation_Status {
 
 
 model Inspection {
-  inspection_id                           String           @id @default(uuid()) @unique
-  inspection_ind                          String       @unique
+  inspection_id                           String      @id @default(uuid()) @unique
+  inspection_ind                          String      @unique
   date                                    String
   pass                                    Boolean
+  inspection_comments                     String?       
+  inspection_type                         String      // Type of inspection (e.g., Initial, Final, Electrical)
 
-  installation                            Installation?      @relation(fields: [installation_id], references: [installation_id])
-  installation_id                         String?
+  inspected_by                            User?         @relation("ProjectInspector", fields: [inspected_by_id], references: [user_id])
+  inspected_by_id                         String?
 
+  project                                 Project?         @relation(fields: [project_id], references: [project_id])
+  project_id                              String?
+  
+  
   created_at                              Decimal
   updated_at                              Decimal
 }
+
 
 model Material {
   material_id                             String           @id @default(uuid()) @unique
@@ -427,14 +444,22 @@ model Accounting {
 
 
 model Service_Ticket {
-  service_ticket_id                       String           @id @default(uuid()) @unique
-  service_ticket_ind                      String       @unique
+  service_ticket_id                       String               @id @default(uuid()) @unique
+  service_ticket_ind                      String               @unique
   description                             String
   status                                  Service_Ticket_Status @default(OPEN)
-
-  user                                    User?     @relation(fields: [user_id], references: [user_id])
-  user_id                                 String?
-
+  
+  project                                 Project?             @relation(fields: [project_id], references: [project_id])
+  project_id                              String?              
+  
+  created_by                              User?                @relation("created_by", fields: [created_by_id], references: [user_id])
+  created_by_id                           String?              
+  
+  updated_by                              User?                @relation("updated_by", fields: [updated_by_id], references: [user_id])
+  updated_by_id                           String?              
+  
+  image_url                               String?              // Optional URL for the uploaded image
+  
   created_at                              Decimal
   updated_at                              Decimal
 }
@@ -473,26 +498,42 @@ model Job {
   customer                                User?      @relation(fields: [customer_id], references: [user_id])
   customer_id                             String?
 
+  job_adder                               User?         @relation("JobAdder",fields: [job_adder_id], references: [user_id])
+  job_adder_id                            String?
+
   contract_amount                         Float
   contract_date                           String
   email                                   String?
-  hoa_status                              Hoa
-  hoa_sent_date                           String?
-  hoa_approval_date                       String?
 
-  engineering_submit_date                 String?
-  engineering_received_date               String?
-  engineering_resubmitted_date            String?
-  engineering_approval_date               String?
-  engineering_status                      EngineeringStatus
+  // HOA Permit Field
+  hoa_permit_status                       PermitStatus @default(PENDING)
+  hoa_permit_submit_date                  String?
+  hoa_permit_approval_date                String?
+  hoa_permit_documents                    Json?            @default("[]")
 
-  permit_submit_date                      String?
+  // Engineering Permit Field
+  engineering_permit_status               PermitStatus @default(PENDING)
+  engineering_permit_submit_date          String?
+  engineering_permit_approval_date        String?
+  engineering_permit_documents            Json?            @default("[]")
+  
+
+  // Electrical Permit Field
+  electrical_permit_status                PermitStatus @default(PENDING)
+  electrical_permit_submit_date           String?
+  electrical_permit_approval_date         String?
+  electrical_permit_documents             Json?            @default("[]")
+
+  // General Permit Field
+  general_permit_status                   PermitStatus?
+  general_permit_submit_date              String?
+  general_permit_approval_date            String?
+  general_permit_documents                Json?            @default("[]")
+
   permit_number                           String?    @default(value: "")
-  permit_approval_date                    String?
-  permit_status                           PermitStatus?
   cover_color                             String?
   cover_size                              String?
-
+  attached                                Boolean       @default(false)
   
   project                                 Project[]
   payments                                Payment[]
@@ -510,26 +551,11 @@ model Job {
 }
 
 enum PermitStatus {
-  NOT_REQUIRED
+  REJECTED
   SUBMITTED
   APPROVED
-  REJECTED
-}
-
-enum EngineeringStatus {
-  SUBMITTED
-  NOT_REQUIRED
-  REVISION_REQUIRED
-  APPROVED
-  REJECTED
-}
-
-enum Hoa {
   NOT_REQUIRED
   PENDING
-  SENT
-  APPROVED
-  REJECTED
 }
 
 model Task {
@@ -537,8 +563,9 @@ model Task {
   task_ind                                String       @unique
 
   description                             String?
-  assigned_to                             String?
-  status                                  Task_Status
+  task_assigned_to                        User?      @relation("Task_Assigned", fields: [task_assigned_to_id], references: [user_id])
+  task_assigned_to_id                     String?
+  status                                  Task_Status  @default(PENDING)
   start_date                              String?
   due_date                                String?
   completion_date                         String?
@@ -577,13 +604,18 @@ model Project {
   progress_tracker                        Installation? @relation(fields: [progress_tracker_id], references: [installation_id])
   progress_tracker_id                     String?
 
-  attached                                Boolean
+  project_adder                           User?         @relation("ProjectAdder", fields: [project_adder_id], references: [user_id])
+  project_adder_id                        String?
+
+  attached                                Boolean       @default(false)
   structure_type                          StructureType
   description                             String?
   cover_size                              String?
   end_cap_style                           String?
   cover_color                             String?
   trim_color                              String?
+
+  status                                  ProjectStatus   @default(PENDING)
 
   // Contract Details
   contract_amount                         Float?
@@ -595,9 +627,19 @@ model Project {
   attachments                             Attachment[]  @relation("ProjectAttachments")
   sales_Pipelines                         Sales_Pipeline[]
   notifications                           Notification[]
+  service_tickets                         Service_Ticket[]
+  inspections                             Inspection[]
 
   created_at                              Decimal
   updated_at                              Decimal
+}
+
+enum ProjectStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  ON_HOLD
+  CANCELLED
 }
 
 model Attachment {
@@ -636,6 +678,7 @@ model Sales_Pipeline {
 
   project                                 Project?         @relation(fields: [project_id], references: [project_id])
   project_id                              String?
+
   
   disposition                             Disposition? // Enum for Sold/Not Sold/Other dispositions
   

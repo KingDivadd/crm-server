@@ -9,6 +9,7 @@ const bcrypt = require('bcrypt')
 export const create_lead = async(req: CustomRequest, res: Response, next: NextFunction)=>{
     const {customer_name, address, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
     try {
+        const user_id = req.user.user_id
 
         const [lead_exist, last_lead,  last_pipeline, last_notification] = await Promise.all([
             prisma.lead.findFirst({ where: {email: req.body.email} }),
@@ -31,6 +32,8 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
         const last_notification_number = last_notification ? parseInt(last_notification.notification_ind.slice(2)) : 0;
         const new_notification_number = last_notification_number + 1;
         const new_notification_ind = `NT${new_notification_number.toString().padStart(4, '0')}`;
+
+        req.body.lead_adder_id = user_id
 
         const new_lead = await prisma.lead.create({
             data: {
@@ -69,7 +72,7 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
         ])
 
         const [first_name, last_name] = customer_name.split(' ')
-        const user = {first_name: first_name, last_name: last_name || ''}
+        const user = {first_name: first_name, last_name: last_name || '', email:email}
         send_lead_created_email(user)
         console.log('customer_name ', user);
         

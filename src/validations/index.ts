@@ -327,17 +327,10 @@ export const create_job_validation = async (req: Request, res: Response, next: N
     try {
         const schema = Joi.object({
             lead_id: Joi.string().trim().required(),
-            contract_amount: Joi.string().trim().required(),
+            contract_amount: Joi.number().required(),
             contract_date: Joi.string().trim().required(),
-            hoa_status: Joi.string().trim().required(),
-            engineering_status: Joi.string().trim().required(),
-            engineering_submitted: Joi.string().trim().allow('').optional(),
-            engineering_received: Joi.string().trim().allow('').optional(),
-            permit_status: Joi.string().trim().allow('').optional(),
-            permit_sent_date: Joi.string().trim().allow('').optional(),
-            permit_approved_date: Joi.string().trim().allow('').optional(),
-            hoa_sent_date: Joi.string().trim().allow('').optional(),
-            hoa_approval_date: Joi.string().trim().allow('').optional(),
+            
+
             cover_size: Joi.string().trim().allow('').optional(),
             cover_color: Joi.string().trim().allow('').optional(),
             attached: Joi.boolean().optional(),
@@ -345,7 +338,57 @@ export const create_job_validation = async (req: Request, res: Response, next: N
             description: Joi.string().trim().allow('').optional(),
             end_cap_style: Joi.string().trim().allow('').optional(),
             trim_color: Joi.string().trim().allow('').optional(),
-            permit_number: Joi.string().trim().allow('').optional(),
+            
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating job creation input ',error })
+    }
+}
+
+export const update_job_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            lead_id: Joi.string().trim().required(),
+            contract_amount: Joi.string().trim().required(),
+            contract_date: Joi.string().trim().required(),
+            
+            hoa_permit_status: Joi.string().trim().allow('').optional(),
+            hoa_permit_submit_date: Joi.string().trim().allow('').optional(),
+            hoa_permit_approval_date: Joi.string().trim().allow('').optional(),
+            hoa_permit_documents: Joi.string().trim().allow('').optional(),
+
+            engineering_permit_status: Joi.string().trim().allow('').optional(),
+            engineering_permit_submit_date: Joi.string().trim().allow('').optional(),
+            engineering_permit_approval_date: Joi.string().trim().allow('').optional(),
+            engineering_permit_documents: Joi.string().trim().allow('').optional(),
+
+            electrical_permit_status: Joi.string().trim().allow('').optional(),
+            electrical_permit_submit_date: Joi.string().trim().allow('').optional(),
+            electrical_permit_approval_date: Joi.string().trim().allow('').optional(),
+            electrical_permit_documents: Joi.string().trim().allow('').optional(),
+
+            general_permit_status: Joi.string().trim().allow('').optional(),
+            general_permit_submit_date: Joi.string().trim().allow('').optional(),
+            general_permit_approval_date: Joi.string().trim().allow('').optional(),
+            general_permit_documents: Joi.string().trim().allow('').optional(),
+
+            cover_size: Joi.string().trim().allow('').optional(),
+            cover_color: Joi.string().trim().allow('').optional(),
+            attached: Joi.boolean().optional(),
+            structure_type: Joi.string().trim().allow('').optional(),
+            description: Joi.string().trim().allow('').optional(),
+            end_cap_style: Joi.string().trim().allow('').optional(),
+            trim_color: Joi.string().trim().allow('').optional(),
             
 
         })
@@ -368,7 +411,7 @@ export const create_task_validation = async (req: Request, res: Response, next: 
         const schema = Joi.object({
             job_id: Joi.string().trim().required(),
             description: Joi.string().trim().required(),
-            assigned_to: Joi.string().trim().required(),
+            task_assigned_to: Joi.string().trim().required(),
             status: Joi.string().trim().required(),
             start_date: Joi.string().trim().allow('').optional(),
             due_date: Joi.string().trim().allow('').optional(),
@@ -389,6 +432,7 @@ export const create_task_validation = async (req: Request, res: Response, next: 
         return res.status(422).json({ err: 'Error occured while validating task creation input ',error })
     }
 }
+
 export const edit_task_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const schema = Joi.object({
@@ -414,3 +458,50 @@ export const edit_task_validation = async (req: Request, res: Response, next: Ne
     }
 }
 
+
+export const create_ticket_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            description: Joi.string().trim().required(),
+            project_id: Joi.string().trim().required(),
+            image_url: Joi.string().trim().allow('').optional(),
+            
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating service ticket data ',error })
+    }
+}
+
+
+export const create_inspection_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            date: Joi.string().trim().required(),
+            pass: Joi.string().trim().required(),
+            inspection_comments: Joi.string().trim().required(),
+            inspection_type: Joi.string().trim().required(),
+            project_id: Joi.string().trim().required(),
+            
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating creating inspection data ',error })
+    }
+}

@@ -13,7 +13,7 @@ import {admin_complete_signup, admin_signup, generate_user_otp, reset_password, 
     main_sales_dashboard,
     logged_in_user} from '../controllers/authentication'
 
-import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_job_validation, create_lead_validation, create_task_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_settings_validation, update_user_validation, verify_otp_validation} from '../validations/index'
+import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_inspection_validation, create_job_validation, create_lead_validation, create_task_validation, create_ticket_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_job_validation, update_settings_validation, update_user_validation, verify_otp_validation} from '../validations/index'
 
 import {email_exist, validate_admin_access, verify_auth_id, verify_otp} from '../helpers/auth_helper'
 
@@ -25,9 +25,11 @@ import { all_notification, all_task_notification, filter_task_notification, upda
 import { all_lead, create_lead, delete_lead, filter_lead, installation_overview, job_contract_overview, leads, project_information, update_lead } from '../controllers/leads_controller'
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 import { sales_report_page_info } from '../controllers/report'
-import { create_job, edit_job, all_jobs, jobs, delete_job } from '../controllers/job_controller'
+import { create_job, edit_job, all_jobs, create_task_data, delete_job, all_project } from '../controllers/job_controller'
 import { all_pipeline, sales_pipeline_page } from '../controllers/sales_pipeline_controller'
 import { create_task, edit_task, all_tasks } from '../controllers/task_controller'
+import { all_ticket, create_ticket, user_projects } from '../controllers/ticket_controller'
+import { all_inspections, create_inspection } from '../controllers/permit_porter'
 
 
 
@@ -107,13 +109,15 @@ router.route('/filter-leads/:disposition/:page_number').get(verify_auth_id, filt
 
 router.route('/create-job').post(verify_auth_id, create_job_validation, create_job)
 
-router.route('/edit-job/:job_id').patch(verify_auth_id, create_job_validation, edit_job)
+router.route('/edit-job/:job_id').patch(verify_auth_id, update_job_validation, edit_job)
 
 router.route('/all-jobs/:page_number').get(verify_auth_id, all_jobs)
 
-router.route('/jobs').get(verify_auth_id, jobs)
+router.route('/jobs').get(verify_auth_id, create_task_data)
 
 router.route('/delete-job/:job_id').delete(verify_auth_id, delete_job)
+
+router.route('/all-projects/:page_number').get(verify_auth_id, all_project)
 
 // Task
 
@@ -131,6 +135,14 @@ router.route('/all-pipeline/:page_number').get(verify_auth_id, all_pipeline )
 
 router.route('/report-dashboard/:page_number').get(verify_auth_id, sales_report_page_info)
 
+// Service Ticket
+
+router.route('/user-projects').get(verify_auth_id, user_projects)
+
+router.route('/all-ticket/:page_number').get(verify_auth_id, all_ticket)
+
+router.route('/create-ticket').post(verify_auth_id, create_ticket_validation, create_ticket )
+
 // Test route
 
 router.route('/test-connection').get(test_connection)
@@ -144,6 +156,14 @@ router.route('/settings-info').get(verify_auth_id, get_settings_information)
 router.route('/update-settings-info').patch(verify_auth_id, update_settings_validation, update_settings_information)
 
 // router.route('/update-settings').patch(verify_auth_id, settings_validation, )
+
+// Permit Page
+
+router.route('/all-inspections').get(verify_auth_id, all_inspections)
+
+router.route('/create-inspection').post(verify_auth_id, create_inspection_validation, create_inspection)
+
+router.route('/all-permit').get(verify_auth_id, )
 
 
 // Sales Department

@@ -4,14 +4,20 @@ import { CustomRequest } from '../helpers/interface'
 import converted_datetime from '../helpers/date_time_elemets'
 import { send_job_created_email, send_lead_created_email, send_lead_sold_email } from '../helpers/email'
 import { salt_round } from '../helpers/constants'
+import { connect } from 'mongoose'
 const bcrypt = require('bcrypt')
 
 
 //Sales personnel are allowed to create lead
 export const create_job = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    const {contract_amount, contract_date, hoa_status, engineering_submitted, engineering_received, permit_sent_date, permit_approved_date, lead_id, engineering_status, cover_size, cover_color, permit_status, attached, structure_type, description, end_cap_style, trim_color} = req.body
+    const {
+        lead_id, contract_amount, contract_date, hoa_permit_status, hoa_approval_date,
+        engineering_permit_status, engineering_submit_date, engineering_approval_date,
+        elecrical_permit_status, electrical_permit_submit_date, electrical_permit_approval_date, general_permit_status, general_permit_submit_date, general_permit_approval_date, cover_size, cover_color, attached, structure_type, description, end_cap_style, trim_color, 
+    } = req.body
     try {
 
+        const adder_id = req.user.user_id
         // check lead disposition status
 
         const [lead, job, pipeline, last_job, last_pipeline, last_notification, last_project ] = await Promise.all([
@@ -44,12 +50,15 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
 
         const last_project_number = last_project ? parseInt(last_project.project_ind.slice(2)) : 0;
         const new_project_number = last_project_number + 1;
-        const new_project_ind = `NT${new_project_number.toString().padStart(4, '0')}`;
+        const new_project_ind = `PJ${new_project_number.toString().padStart(4, '0')}`;
+
 
         const new_job = await prisma.job.create({
             data: {
-                job_ind: new_job_ind, lead: {connect: {lead_id}}, contract_amount: Number(contract_amount.replace(/,/g,'')), contract_date, cover_color, cover_size, engineering_received_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_received, engineering_status, engineering_submit_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_submitted, hoa_status: hoa_status, permit_approval_date: permit_status == 'NOT_REQUIRED' ? "": permit_approved_date, permit_submit_date: permit_status == 'NOT_REQUIRED' ? "": permit_sent_date, permit_status, updated_at: converted_datetime(), created_at: converted_datetime()
-            }, include: {lead: true}
+                job_ind: new_job_ind,lead: {connect: {lead_id}}, customer: {connect: {user_id:adder_id}}, 
+                job_adder: {connect: {user_id: adder_id}}, contract_amount, contract_date, cover_color, cover_size, 
+                updated_at: converted_datetime(), created_at: converted_datetime()
+            }, include: {lead: true}, 
         })
 
         if (!new_job){
@@ -74,9 +83,9 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
             }),
             prisma.project.create({
                 data: {
-                    project_ind: new_project_ind, job_id: new_job.job_id, 
+                    project_ind: new_project_ind, job_id: new_job.job_id, project_adder_id: adder_id,
                     attached, structure_type, description, end_cap_style, trim_color,cover_color, 
-                    cover_size, contract_amount: Number(contract_amount.replace(/,/g,'')), contract_date, 
+                    cover_size, contract_amount: contract_amount, contract_date, 
                     created_at: converted_datetime(),
                     updated_at: converted_datetime()
                 }
@@ -93,7 +102,7 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
 
         if (!new_project) {
             await prisma.job.delete({where: {job_id: new_job.job_id}})
-        }
+        }        
 
         send_job_created_email(lead.customer)
         
@@ -116,12 +125,14 @@ function generateNewInd(lastInd: string | undefined, prefix: string): string {
 
 
 export const edit_job = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    const {contract_amount, contract_date, hoa_status, hoa_sent_date, hoa_approval_date ,engineering_submitted, engineering_received, permit_sent_date, permit_approved_date, lead_id, engineering_status, cover_size, cover_color, permit_status} = req.body
+    const {
+        job_id, lead_id,permit_number, contract_amount, contract_date, hoa_permit_status, hoa_permit_approval_date, hoa_permit_documents, hoa_permit_submit_date, engineering_permit_status, engineering_permit_submit_date, engineering_permit_approval_date, engineering_permit_documents , electrical_permit_documents, electrical_permit_status , electrical_permit_submit_date, electrical_permit_approval_date, general_permit_status, general_permit_submit_date, general_permit_approval_date, general_permit_documents, cover_size, cover_color, attached, structure_type, description, end_cap_style, trim_color,
+    } = req.body
+
     try {
 
         // check lead disposition status
         const {job_id} = req.params
-
 
         const [job_exist, lead, pipeline, last_pipeline, last_notification] = await Promise.all([
             prisma.job.findUnique({ where: {job_id} }),
@@ -148,16 +159,16 @@ export const edit_job = async(req: CustomRequest, res: Response, next: NextFunct
         const new_notification_ind = `NT${new_notification_number.toString().padStart(4, '0')}`;
 
 
+        
 
         const update_job = await prisma.job.update({
-            where: {job_id},
+            where: {job_id: job_id},
             data: {
-                lead: {connect: {lead_id: lead_id}},
-                
-                contract_amount: Number(contract_amount.replace(/,/g,'')), contract_date, cover_color, cover_size, engineering_received_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_received, engineering_status, engineering_submit_date: engineering_status == 'NOT_REQUIRED' ? '' : engineering_submitted, hoa_status: hoa_status, permit_approval_date: permit_status == 'NOT_REQUIRED' ? "": permit_approved_date, permit_submit_date: permit_status == 'NOT_REQUIRED' ? "": permit_sent_date, permit_status, updated_at: converted_datetime(), hoa_sent_date: hoa_sent_date || '', hoa_approval_date: hoa_approval_date || '',
-            },include: {lead: {include: {assigned_to: true}}}
+                cover_size, cover_color, permit_number, general_permit_documents, general_permit_approval_date, general_permit_submit_date, general_permit_status,electrical_permit_documents, electrical_permit_submit_date, electrical_permit_approval_date, electrical_permit_status, engineering_permit_documents, engineering_permit_approval_date, engineering_permit_submit_date, engineering_permit_status, hoa_permit_approval_date, hoa_permit_documents, hoa_permit_status, hoa_permit_submit_date, contract_date, contract_amount,job_adder: {connect: {user_id: req.user.user_id} }, lead: {connect: {lead_id}}, attached, updated_at: converted_datetime(), created_at: converted_datetime()
+                 } ,
+            include: {lead: {include: {assigned_to: true}} }
         })
-      
+            
         let new_pipeline;
         if (pipeline) {
             new_pipeline = await prisma.sales_Pipeline.update({
@@ -211,14 +222,19 @@ export const edit_job = async(req: CustomRequest, res: Response, next: NextFunct
     }
 }
 
-export const jobs = async(req: CustomRequest, res: Response)=>{
+export const create_task_data = async(req: CustomRequest, res: Response)=>{
     try {
         
-        const all_jobs = await prisma.job.findMany({
-            include: {lead: true}, orderBy: {job_ind: 'desc'}
-        })
+        const [all_jobs, admin_team, engineering_team, permit_team, electrical_team] = await Promise.all([
+            prisma.job.findMany({ include: {lead: true}, orderBy: {job_ind: 'desc'} }),
+            prisma.user.findMany({where: {user_role: 'admin'}}),
+            prisma.user.findMany({where: {user_role: 'engineering'}}),
+            prisma.user.findMany({where: {user_role: 'permit'}}),
+            prisma.user.findMany({where: {user_role: 'electrical'}}),
 
-        return res.status(200).json({nbHit: all_jobs.length, jobs: all_jobs})
+        ]) 
+                
+        return res.status(200).json({nbHit: all_jobs.length, jobs: all_jobs, admin_team, engineering_team, permit_team, electrical_team })
 
     } catch (err:any) {
         console.log('Error occured while fetching all jobs');
@@ -234,8 +250,13 @@ export const all_jobs = async(req: CustomRequest, res: Response, next: NextFunct
         const [number_of_jobs, jobs] = await Promise.all([
 
             prisma.job.count({}),
-            prisma.job.findMany({ include: {lead: true}, skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { job_ind: 'desc'  } }),
-
+            prisma.job.findMany({ 
+                include: {
+                    lead: true, 
+                    job_adder: true}, 
+                    skip: (Math.abs(Number(page_number)) - 1) * 15, 
+                    take: 15, orderBy: { job_ind: 'desc'  } 
+                }),
         ])
 
         const number_of_jobs_pages = (number_of_jobs <= 15) ? 1 : Math.ceil(number_of_jobs / 15)
@@ -295,5 +316,45 @@ export const delete_job = async(req: CustomRequest, res: Response, next: NextFun
     } catch (err:any) {
         console.log('Error occured while deleting job ', err);
         return res.status(500).json({err: 'Error occured while deleting job ', error: err})
+    }
+}
+
+export const all_project = async(req: CustomRequest, res: Response, next: NextFunction)=>{
+    try {
+
+        const {page_number} = req.params
+
+        const [number_of_projects, projects] = await Promise.all([
+
+            prisma.project.count({}),
+            prisma.project.findMany({
+                include: {
+                    project_adder: {
+                        select: {
+                            first_name: true, last_name: true, user_id: true, avatar: true,
+                        }
+                    },
+                    job: {
+                        include: {lead: {
+                            include: { assigned_to: {select: {last_name: true, first_name: true},}} 
+                        }}
+                }}, 
+                skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { project_ind: 'desc'  } }),
+
+        ])
+
+        const number_of_projects_pages = (number_of_projects <= 15) ? 1 : Math.ceil(number_of_projects / 15)
+
+        return res.status(200).json({
+            msg: 'All Projects ', 
+            total_number_of_projects: number_of_projects,
+            total_number_of_projects_pages: number_of_projects_pages,
+            projects: projects,
+        })
+
+        
+    } catch (err:any) {
+        console.log('Error occured while fetching all projects ', err);
+        return res.status(500).json({err: 'Error occured while fetching all projects ', error: err})
     }
 }
