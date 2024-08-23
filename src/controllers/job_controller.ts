@@ -314,7 +314,7 @@ export const delete_job = async(req: CustomRequest, res: Response, next: NextFun
         return res.status(200).json({msg: 'Selected Job deleted successfully'})
         
     } catch (err:any) {
-        console.log('Error occured while deleting job ', err);
+        console.log('Error occured while deleting job: ', err);
         return res.status(500).json({err: 'Error occured while deleting job ', error: err})
     }
 }
