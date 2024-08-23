@@ -164,7 +164,7 @@ export const edit_job = async(req: CustomRequest, res: Response, next: NextFunct
         const update_job = await prisma.job.update({
             where: {job_id: job_id},
             data: {
-                cover_size, cover_color, permit_number, general_permit_documents, general_permit_approval_date, general_permit_submit_date, general_permit_status,electrical_permit_documents, electrical_permit_submit_date, electrical_permit_approval_date, electrical_permit_status, engineering_permit_documents, engineering_permit_approval_date, engineering_permit_submit_date, engineering_permit_status, hoa_permit_approval_date, hoa_permit_documents, hoa_permit_status, hoa_permit_submit_date, contract_date, contract_amount,job_adder: {connect: {user_id: req.user.user_id} }, lead: {connect: {lead_id}}, attached, updated_at: converted_datetime(), created_at: converted_datetime()
+                cover_size, cover_color, general_permit_documents, general_permit_approval_date, general_permit_submit_date, general_permit_status,electrical_permit_documents, electrical_permit_submit_date, electrical_permit_approval_date, electrical_permit_status, engineering_permit_documents, engineering_permit_approval_date, engineering_permit_submit_date, engineering_permit_status, hoa_permit_approval_date, hoa_permit_documents, hoa_permit_status, hoa_permit_submit_date, contract_date, contract_amount,job_adder: {connect: {user_id: req.user.user_id} }, lead: {connect: {lead_id}}, attached, updated_at: converted_datetime(), created_at: converted_datetime()
                  } ,
             include: {lead: {include: {assigned_to: true}} }
         })

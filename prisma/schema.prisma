@@ -510,12 +510,14 @@ model Job {
   hoa_permit_submit_date                  String?
   hoa_permit_approval_date                String?
   hoa_permit_documents                    Json?            @default("[]")
+  hoa_permit_number                       String?
 
   // Engineering Permit Field
   engineering_permit_status               PermitStatus @default(PENDING)
   engineering_permit_submit_date          String?
   engineering_permit_approval_date        String?
   engineering_permit_documents            Json?            @default("[]")
+  engineering_permit_number               String?
   
 
   // Electrical Permit Field
@@ -523,14 +525,15 @@ model Job {
   electrical_permit_submit_date           String?
   electrical_permit_approval_date         String?
   electrical_permit_documents             Json?            @default("[]")
+  electrical_permit_number                String?
 
   // General Permit Field
   general_permit_status                   PermitStatus?
   general_permit_submit_date              String?
   general_permit_approval_date            String?
   general_permit_documents                Json?            @default("[]")
+  general_permit_number                   String?
 
-  permit_number                           String?    @default(value: "")
   cover_color                             String?
   cover_size                              String?
   attached                                Boolean       @default(false)
@@ -578,6 +581,7 @@ model Task {
 
   job                                     Job?      @relation(fields: [job_id], references: [job_id])
   job_id                                  String?
+
   notifications                           Notification[]
 
 
@@ -615,11 +619,9 @@ model Project {
   cover_color                             String?
   trim_color                              String?
 
-  status                                  ProjectStatus   @default(PENDING)
 
-  status                                  ProjectStatus   @default(PENDING)
+  status                                  ProjectStatus       @default(PENDING)
 
-  status                                  ProjectStatus @default(PENDING)
   // Contract Details
   contract_amount                         Float?
   contract_date                           String?
@@ -645,17 +647,10 @@ enum ProjectStatus {
   CANCELLED
 }
 
-enum ProjectStatus {
-  PENDING
-  IN_PROGRESS
-  COMPLETED
-  ON_HOLD
-  CANCELLED
-}
 
 model Attachment {
   attachment_id                           String      @id @default(uuid()) @unique
-  attachment_ind                            String       @unique
+  attachment_ind                          String       @unique
 
   project                                 Project     @relation("ProjectAttachments", fields: [project_id], references: [project_id])
   project_id                              String

@@ -406,6 +406,56 @@ export const update_job_validation = async (req: Request, res: Response, next: N
     }
 }
 
+export const update_task_progress_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            
+            job_id: Joi.string().trim().required(),
+
+            hoa_permit_status: Joi.string().trim().allow('').optional(),
+            hoa_permit_submit_date: Joi.string().trim().allow('').optional(),
+            hoa_permit_approval_date: Joi.string().trim().allow('').optional(),
+            hoa_permit_documents: Joi.array().optional(),
+            hoa_permit_number: Joi.string().allow('').optional(),
+
+            engineering_permit_status: Joi.string().trim().allow('').optional(),
+            engineering_permit_submit_date: Joi.string().trim().allow('').optional(),
+            engineering_permit_approval_date: Joi.string().trim().allow('').optional(),
+            engineering_permit_documents: Joi.array().optional(),
+            engineering_permit_number: Joi.string().allow('').optional(),
+
+            electrical_permit_status: Joi.string().trim().allow('').optional(),
+            electrical_permit_submit_date: Joi.string().trim().allow('').optional(),
+            electrical_permit_approval_date: Joi.string().trim().allow('').optional(),
+            electrical_permit_documents: Joi.array().optional(),
+            electrical_permit_number: Joi.string().allow('').optional(),
+
+            general_permit_status: Joi.string().trim().allow('').optional(),
+            general_permit_submit_date: Joi.string().trim().allow('').optional(),
+            general_permit_approval_date: Joi.string().trim().allow('').optional(),
+            general_permit_documents: Joi.array().optional(),
+            general_permit_number: Joi.string().allow('').optional(),
+
+            note: Joi.string().trim().allow('').optional(),
+            permit_number: Joi.string().trim().allow('').optional(),
+
+            
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating job creation input ',error })
+    }
+}
+
 export const create_task_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const schema = Joi.object({
