@@ -178,9 +178,9 @@ router.route('/project-information/:page_number').get(verify_auth_id, project_in
 
 router.route('/project-progress-tracking/:page_number').get(verify_auth_id, installation_overview)
 
+// Customer Dept
 
-
-
+router.route('/customer-dashboard').get(verify_auth_id, customer_dashboard)
 
 
 
