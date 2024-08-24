@@ -57,7 +57,7 @@ export const create_task = async(req: CustomRequest, res: Response, next: NextFu
         
     } catch (err:any) {
         console.log('Error occured while creating task ', err);
-        return res.status(500).json({err: 'Error occured while creating task. ', error: err})
+        return res.status(500).json({err: 'Error occured while creating task.. ', error: err})
     }
 }
 
