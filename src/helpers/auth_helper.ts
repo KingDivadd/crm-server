@@ -51,7 +51,7 @@ export const verify_auth_id = async(req: CustomRequest, res: Response, next: Nex
 
         const value = await (await redis_client).get(`${auth_id}`)
 
-        if (!value) { return res.status(401).json({ err: `session id has expired, please login again to continue.` })  }
+        if (!value) { return res.status(402).json({ err: `session id has expired, please login again to continue.` })  }
 
         const decoded_value = await jwt.verify(value, jwt_secret)
         
@@ -79,7 +79,7 @@ export const validate_admin_access = async(req: CustomRequest, res: Response, ne
 
         const value = await (await redis_client).get(`${auth_id}`)
 
-        if (!value) { return res.status(401).json({ err: `session id has expired, please login again to continue.` })  }
+        if (!value) { return res.status(402).json({ err: `session id has expired, please login again to continue.` })  }
 
         const decoded_value = await jwt.verify(value, jwt_secret)
         

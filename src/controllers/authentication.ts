@@ -75,7 +75,7 @@ export const user_login = async(req: Request, res: Response, next: NextFunction)
 
         if (!staff){return res.status(404).json({err: 'Incorrect email address, please check email and try again.'})}
 
-        if (!staff.is_verified ){ return res.status(402).json({err: 'Account not verified yet.'}) }
+        if (!staff.is_verified ){ return res.status(401).json({err: 'Account not verified yet.'}) }
 
         const encrypted_password = staff.password
         const match_password: boolean = await bcrypt.compare(password, encrypted_password)
