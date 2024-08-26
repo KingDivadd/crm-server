@@ -23,13 +23,12 @@ import {  create_lead,  installation_overview, job_contract_overview, leads, pro
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 import { sales_report_page_info } from '../controllers/report'
 import {  create_task_data, all_project } from '../controllers/job_controller'
-import { all_pipeline, sales_pipeline_page } from '../controllers/sales_pipeline_controller'
 import { create_task, edit_task, all_tasks, start_task, task_progress_update } from '../controllers/task_controller'
 import { all_ticket, create_ticket, user_projects } from '../controllers/ticket_controller'
 import { all_inspections, create_inspection } from '../controllers/permit_porter'
 import { customer_dashboard } from '../controllers/project_controller'
 import { all_app_users, filter_users, update_user_data, delete_lead, all_lead, filter_lead, create_job, edit_job, all_jobs, delete_job, admin_main_dashboard } from '../controllers/admin_porter'
-import { sales_main_dashboard } from '../controllers/sales_porter'
+import { sales_main_dashboard, sales_pipeline_page } from '../controllers/sales_porter'
 
 
 
@@ -95,7 +94,7 @@ router.route("/leads").get(verify_auth_id, leads)
 
 router.route('/filter-leads/:disposition/:page_number').get(verify_auth_id, filter_lead)
 
-router.route('/all-pipeline/:page_number').get(verify_auth_id, all_pipeline )
+router.route('/pipeline-dashbpard/:page_number').get(verify_auth_id, sales_pipeline_page )
 
 router.route('/job-contract-details/:page_number').get(verify_auth_id, job_contract_overview)
 

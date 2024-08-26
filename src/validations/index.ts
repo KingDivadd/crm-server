@@ -8,7 +8,7 @@ export const admin_signup_validation = async (req: Request, res: Response, next:
         const schema = Joi.object({
             last_name: Joi.string().trim().required(),
             first_name: Joi.string().trim().required(),
-            phone_number: Joi.string().trim().allow('').optional(),
+            phone_number: Joi.string().trim().allow(null,'').optional(),
             email: Joi.string().email().trim().required(),
             password: Joi.string().trim().required()
         })
@@ -163,12 +163,12 @@ export const admin_edit_user_validation = async (req: Request, res: Response, ne
     try {
 
         const schema = Joi.object({
-            last_name: Joi.string().trim().allow('').optional(),
-            first_name: Joi.string().allow('').optional(),
+            last_name: Joi.string().trim().allow(null,'').optional(),
+            first_name: Joi.string().allow(null,'').optional(),
             phone_number: Joi.string().trim().optional().allow(''),
-            country_code: Joi.string().trim().allow('').optional(),
-            password: Joi.string().trim().allow('').optional(),
-            user_role: Joi.string().trim().allow('').optional(),
+            country_code: Joi.string().trim().allow(null,'').optional(),
+            password: Joi.string().trim().allow(null,'').optional(),
+            user_role: Joi.string().trim().allow(null,'').optional(),
         })
 
         const { error: validation_error } = schema.validate(req.body)
@@ -210,12 +210,12 @@ export const update_user_validation = async (req: Request, res: Response, next: 
     try {
 
         const schema = Joi.object({
-            last_name: Joi.string().trim().allow('').optional(),
-            first_name: Joi.string().trim().allow('').optional(),
-            password: Joi.string().trim().allow('').optional(),
-            avatar: Joi.string().trim().allow('').optional(),
-            phone_number: Joi.string().trim().allow('').optional(),
-            country_code: Joi.string().trim().allow('').optional(),
+            last_name: Joi.string().trim().allow(null,'').optional(),
+            first_name: Joi.string().trim().allow(null,'').optional(),
+            password: Joi.string().trim().allow(null,'').optional(),
+            avatar: Joi.string().trim().allow(null,'').optional(),
+            phone_number: Joi.string().trim().allow(null,'').optional(),
+            country_code: Joi.string().trim().allow(null,'').optional(),
 
             user_id: Joi.string().trim().required(),
             active_status: Joi.boolean().optional()
@@ -239,18 +239,18 @@ export const update_settings_validation = async (req: Request, res: Response, ne
     try {
 
         const schema = Joi.object({
-            company_logo: Joi.string().trim().allow('').optional(),
-            company_name: Joi.string().trim().allow('').optional(),
-            company_address: Joi.string().trim().allow('').optional(),
-            company_email: Joi.string().trim().allow('').optional(),
+            company_logo: Joi.string().trim().allow(null,'').optional(),
+            company_name: Joi.string().trim().allow(null,'').optional(),
+            company_address: Joi.string().trim().allow(null,'').optional(),
+            company_email: Joi.string().trim().allow(null,'').optional(),
             company_phone: Joi.array().items(Joi.string().optional()).optional(),
             number_of_admin: Joi.number().optional(),
 
             avatar: Joi.string().trim().allow('').required(),
             first_name: Joi.string().trim().allow('').required(),
-            last_name: Joi.string().trim().allow('').optional(),
-            other_names: Joi.string().trim().allow('').optional(),
-            email: Joi.string().trim().allow('').optional(),
+            last_name: Joi.string().trim().allow(null,'').optional(),
+            other_names: Joi.string().trim().allow(null,'').optional(),
+            email: Joi.string().trim().allow(null,'').optional(),
             phone_number: Joi.string().trim().allow('').required(),
             password: Joi.string().trim().allow('').required(),
 
@@ -275,8 +275,8 @@ export const settings_validation = async (req: Request, res: Response, next: Nex
         const schema = Joi.object({
             avatar: Joi.string().trim().allow('').required(),
             first_name: Joi.string().trim().allow('').required(),
-            last_name: Joi.string().trim().allow('').optional(),
-            other_names: Joi.string().trim().allow('').optional(),
+            last_name: Joi.string().trim().allow(null,'').optional(),
+            other_names: Joi.string().trim().allow(null,'').optional(),
             phone_number: Joi.string().trim().allow('').required(),
             password: Joi.string().trim().allow('').required(),
 
@@ -331,13 +331,13 @@ export const create_job_validation = async (req: Request, res: Response, next: N
             contract_date: Joi.string().trim().required(),
             
 
-            cover_size: Joi.string().trim().allow('').optional(),
-            cover_color: Joi.string().trim().allow('').optional(),
+            cover_size: Joi.string().trim().allow(null,'').optional(),
+            cover_color: Joi.string().trim().allow(null,'').optional(),
             attached: Joi.boolean().optional(),
-            structure_type: Joi.string().trim().allow('').optional(),
-            description: Joi.string().trim().allow('').optional(),
-            end_cap_style: Joi.string().trim().allow('').optional(),
-            trim_color: Joi.string().trim().allow('').optional(),
+            structure_type: Joi.string().trim().allow(null,'').optional(),
+            description: Joi.string().trim().allow(null,'').optional(),
+            end_cap_style: Joi.string().trim().allow(null,'').optional(),
+            trim_color: Joi.string().trim().allow(null,'').optional(),
             
 
         })
@@ -357,38 +357,39 @@ export const create_job_validation = async (req: Request, res: Response, next: N
 
 export const update_job_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
+        
         const schema = Joi.object({
             lead_id: Joi.string().trim().required(),
-            contract_amount: Joi.string().trim().required(),
+            contract_amount: Joi.number().required(),
             contract_date: Joi.string().trim().required(),
             
-            hoa_permit_status: Joi.string().trim().allow('').optional(),
-            hoa_permit_submit_date: Joi.string().trim().allow('').optional(),
-            hoa_permit_approval_date: Joi.string().trim().allow('').optional(),
-            hoa_permit_documents: Joi.string().trim().allow('').optional(),
+            hoa_permit_status: Joi.string().trim().allow(null,'').optional(),
+            hoa_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
+            hoa_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
+            hoa_permit_documents: Joi.array().optional(),
 
-            engineering_permit_status: Joi.string().trim().allow('').optional(),
-            engineering_permit_submit_date: Joi.string().trim().allow('').optional(),
-            engineering_permit_approval_date: Joi.string().trim().allow('').optional(),
-            engineering_permit_documents: Joi.string().trim().allow('').optional(),
+            engineering_permit_status: Joi.string().trim().allow(null,'').optional(),
+            engineering_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
+            engineering_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
+            engineering_permit_documents: Joi.array().optional(),
 
-            electrical_permit_status: Joi.string().trim().allow('').optional(),
-            electrical_permit_submit_date: Joi.string().trim().allow('').optional(),
-            electrical_permit_approval_date: Joi.string().trim().allow('').optional(),
-            electrical_permit_documents: Joi.string().trim().allow('').optional(),
+            electrical_permit_status: Joi.string().trim().allow(null,'').optional(),
+            electrical_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
+            electrical_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
+            electrical_permit_documents: Joi.array().optional(),
 
-            general_permit_status: Joi.string().trim().allow('').optional(),
-            general_permit_submit_date: Joi.string().trim().allow('').optional(),
-            general_permit_approval_date: Joi.string().trim().allow('').optional(),
-            general_permit_documents: Joi.string().trim().allow('').optional(),
+            general_permit_status: Joi.string().trim().allow(null,'').optional(),
+            general_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
+            general_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
+            general_permit_documents: Joi.array().optional(),
 
-            cover_size: Joi.string().trim().allow('').optional(),
-            cover_color: Joi.string().trim().allow('').optional(),
+            cover_size: Joi.string().trim().allow(null,'').optional(),
+            cover_color: Joi.string().trim().allow(null,'').optional(),
             attached: Joi.boolean().optional(),
-            structure_type: Joi.string().trim().allow('').optional(),
-            description: Joi.string().trim().allow('').optional(),
-            end_cap_style: Joi.string().trim().allow('').optional(),
-            trim_color: Joi.string().trim().allow('').optional(),
+            structure_type: Joi.string().trim().allow(null,'').optional(),
+            description: Joi.string().trim().allow(null,'').optional(),
+            end_cap_style: Joi.string().trim().allow(null,'').optional(),
+            trim_color: Joi.string().trim().allow(null,'').optional(),
             
 
         })
@@ -412,32 +413,32 @@ export const update_task_progress_validation = async (req: Request, res: Respons
             
             job_id: Joi.string().trim().required(),
 
-            hoa_permit_status: Joi.string().trim().allow('').optional(),
-            hoa_permit_submit_date: Joi.string().trim().allow('').optional(),
-            hoa_permit_approval_date: Joi.string().trim().allow('').optional(),
+            hoa_permit_status: Joi.string().trim().allow(null,'').optional(),
+            hoa_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
+            hoa_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
             hoa_permit_documents: Joi.array().optional(),
-            hoa_permit_number: Joi.string().allow('').optional(),
+            hoa_permit_number: Joi.string().allow(null,'').optional(),
 
-            engineering_permit_status: Joi.string().trim().allow('').optional(),
-            engineering_permit_submit_date: Joi.string().trim().allow('').optional(),
-            engineering_permit_approval_date: Joi.string().trim().allow('').optional(),
+            engineering_permit_status: Joi.string().trim().allow(null,'').optional(),
+            engineering_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
+            engineering_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
             engineering_permit_documents: Joi.array().optional(),
-            engineering_permit_number: Joi.string().allow('').optional(),
+            engineering_permit_number: Joi.string().allow(null,'').optional(),
 
-            electrical_permit_status: Joi.string().trim().allow('').optional(),
-            electrical_permit_submit_date: Joi.string().trim().allow('').optional(),
-            electrical_permit_approval_date: Joi.string().trim().allow('').optional(),
+            electrical_permit_status: Joi.string().trim().allow(null,'').optional(),
+            electrical_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
+            electrical_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
             electrical_permit_documents: Joi.array().optional(),
-            electrical_permit_number: Joi.string().allow('').optional(),
+            electrical_permit_number: Joi.string().allow(null,'').optional(),
 
-            general_permit_status: Joi.string().trim().allow('').optional(),
-            general_permit_submit_date: Joi.string().trim().allow('').optional(),
-            general_permit_approval_date: Joi.string().trim().allow('').optional(),
+            general_permit_status: Joi.string().trim().allow(null,'').optional(),
+            general_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
+            general_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
             general_permit_documents: Joi.array().optional(),
-            general_permit_number: Joi.string().allow('').optional(),
+            general_permit_number: Joi.string().allow(null,'').optional(),
 
-            note: Joi.string().trim().allow('').optional(),
-            permit_number: Joi.string().trim().allow('').optional(),
+            note: Joi.string().trim().allow(null,'').optional(),
+            permit_number: Joi.string().trim().allow(null,'').optional(),
 
             
 
@@ -463,10 +464,10 @@ export const create_task_validation = async (req: Request, res: Response, next: 
             description: Joi.string().trim().required(),
             task_assigned_to: Joi.string().trim().required(),
             status: Joi.string().trim().required(),
-            start_date: Joi.string().trim().allow('').optional(),
-            due_date: Joi.string().trim().allow('').optional(),
-            completion_date: Joi.string().trim().allow('').optional(),
-            note: Joi.string().trim().allow('').optional(),
+            start_date: Joi.string().trim().allow(null,'').optional(),
+            due_date: Joi.string().trim().allow(null,'').optional(),
+            completion_date: Joi.string().trim().allow(null,'').optional(),
+            note: Joi.string().trim().allow(null,'').optional(),
             
         })
 
@@ -489,9 +490,9 @@ export const edit_task_validation = async (req: Request, res: Response, next: Ne
             job_id: Joi.string().trim().required(),
             description: Joi.string().trim().required(),
             status: Joi.string().trim().required(),
-            start_date: Joi.string().trim().allow('').optional(),
-            due_date: Joi.string().trim().allow('').optional(),
-            completion_date: Joi.string().trim().allow('').optional(),
+            start_date: Joi.string().trim().allow(null,'').optional(),
+            due_date: Joi.string().trim().allow(null,'').optional(),
+            completion_date: Joi.string().trim().allow(null,'').optional(),
             
         })
 
@@ -514,7 +515,7 @@ export const create_ticket_validation = async (req: Request, res: Response, next
         const schema = Joi.object({
             description: Joi.string().trim().required(),
             project_id: Joi.string().trim().required(),
-            image_url: Joi.string().trim().allow('').optional(),
+            image_url: Joi.string().trim().allow(null,'').optional(),
             
         })
 

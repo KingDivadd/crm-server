@@ -354,6 +354,7 @@ model Notification {
   subject                                 String
   message                                 String
   read                                    Boolean  @default(false)
+  read_by                                 Json?            @default("[]")
 
   source                                  User?     @relation("source", fields: [source_id], references: [user_id])
   source_id                               String?

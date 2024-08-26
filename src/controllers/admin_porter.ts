@@ -248,13 +248,21 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
         // check lead disposition status
 
         const [lead, job, pipeline, last_job, last_pipeline, last_notification, last_project ] = await Promise.all([
+
             prisma.lead.findUnique({ where: {lead_id}, include: {customer: {select: {first_name: true, last_name: true,email: true, user_id: true}}} }),
+
             prisma.job.findFirst({where: {lead_id}}),
+
             prisma.sales_Pipeline.findFirst({where: {lead_id}}),
-            prisma.job.findFirst({select: {job_ind: true}, orderBy: {created_at: 'asc'}}),
-            prisma.sales_Pipeline.findFirst({orderBy: {created_at: 'asc'}}),
-            prisma.notification.findFirst({select: {notification_ind: true}, orderBy: {created_at: 'asc'}}),
-            prisma.project.findFirst({ select: {project_ind: true}, orderBy: {created_at: 'asc'}}),
+
+            prisma.job.findFirst({select: {job_ind: true}, orderBy: {created_at: 'desc'}}),
+
+            prisma.sales_Pipeline.findFirst({orderBy: {created_at: 'desc'}}),
+
+            prisma.notification.findFirst({select: {notification_ind: true}, orderBy: {created_at: 'desc'}}),
+
+            prisma.project.findFirst({ select: {project_ind: true}, orderBy: {created_at: 'desc'}}),
+
         ]) 
 
         if (job){ return res.status(400).json({err: 'A job is already created for selected lead!'})}
@@ -356,8 +364,8 @@ export const edit_job = async(req: CustomRequest, res: Response, next: NextFunct
             prisma.job.findUnique({ where: {job_id} }),
             prisma.lead.findUnique({ where: {lead_id} }),
             prisma.sales_Pipeline.findFirst({ where: {lead_id} }),
-            prisma.sales_Pipeline.findFirst({orderBy: {created_at: 'asc'}}),
-            prisma.notification.findFirst({orderBy: {created_at: 'asc'}}),
+            prisma.sales_Pipeline.findFirst({orderBy: {created_at: 'desc'}}),
+            prisma.notification.findFirst({orderBy: {created_at: 'desc'}}),
         ]) 
 
         if (!job_exist) {
@@ -450,8 +458,11 @@ export const all_jobs = async(req: CustomRequest, res: Response, next: NextFunct
             prisma.job.count({}),
             prisma.job.findMany({ 
                 include: {
-                    lead: true, 
-                    job_adder: true}, 
+                    lead: {include: {assigned_to: {select: {last_name: true, first_name: true, avatar: true}}}}, 
+                    project: {select: {project_id:true, job_id: true, structure_type: true, trim_color: true, attached: true, cover_color: true, cover_size: true, end_cap_style: true }},
+                    job_adder: true
+                    
+                }, 
                     skip: (Math.abs(Number(page_number)) - 1) * 15, 
                     take: 15, orderBy: { job_ind: 'asc'  } 
                 }),
@@ -480,7 +491,7 @@ export const delete_job = async(req: CustomRequest, res: Response, next: NextFun
 
         const [job_exist, last_notification] = await Promise.all([
             prisma.job.findUnique({where: {job_id}, include: {lead: true}}),
-            prisma.notification.findFirst({ orderBy: {created_at: 'asc'}})
+            prisma.notification.findFirst({ orderBy: {created_at: 'desc'}})
         ]) 
 
         if (!job_exist) { return res.status(404).json({err: 'Job not found'}) }
