@@ -103,7 +103,16 @@ export const all_notification = async(req: CustomRequest, res: Response, next: N
         const [number_of_notification, notification] = await Promise.all([
 
             prisma.notification.count({}),
-            prisma.notification.findMany({include: {source: true, user: true, lead: true, job: true, task: true, } ,skip: (Math.abs(Number(page_number)) - 1) * 10, take: 10, orderBy: { created_at: 'desc'  } }),
+
+            prisma.notification.findMany({
+                include: {
+                    source: true, user: true, lead: true, job: true, task: true, 
+                }, skip: (
+                    Math.abs(Number(page_number)) - 1
+                ) * 10, 
+                take: 15, 
+                orderBy: { created_at: 'desc'  } 
+            }),
 
         ])
 

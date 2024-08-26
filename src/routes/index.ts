@@ -4,13 +4,10 @@ import express from 'express'
 
 import {admin_complete_signup, admin_signup, generate_user_otp, reset_password, signup_generate_user_otp, 
     user_login, verify_user_otp,
-    all_users,
-    filter_users,
-    update_user_data,
+
     logged_in_admin,
     resend_otp,
     get_user_info,
-    main_sales_dashboard,
     logged_in_user} from '../controllers/authentication'
 
 import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_inspection_validation, create_job_validation, create_lead_validation, create_task_validation, create_ticket_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_job_validation, update_settings_validation, update_task_progress_validation, update_user_validation, verify_otp_validation} from '../validations/index'
@@ -22,15 +19,17 @@ import {test_connection, test_db_connection} from "../controllers/test_server_co
 import { admin_change_user_data, admin_delete_user_data, all_sales_staff, change_user_activity_status, create_new_user } from '../controllers/user_controller'
 import { all_activity } from '../controllers/activity_controller'
 import { all_notification, all_task_notification, filter_task_notification, update_notification } from '../controllers/notification_controller'
-import { all_lead, create_lead, delete_lead, filter_lead, installation_overview, job_contract_overview, leads, project_information, update_lead } from '../controllers/leads_controller'
+import {  create_lead,  installation_overview, job_contract_overview, leads, project_information, update_lead } from '../controllers/leads_controller'
 import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
 import { sales_report_page_info } from '../controllers/report'
-import { create_job, edit_job, all_jobs, create_task_data, delete_job, all_project } from '../controllers/job_controller'
+import {  create_task_data, all_project } from '../controllers/job_controller'
 import { all_pipeline, sales_pipeline_page } from '../controllers/sales_pipeline_controller'
 import { create_task, edit_task, all_tasks, start_task, task_progress_update } from '../controllers/task_controller'
 import { all_ticket, create_ticket, user_projects } from '../controllers/ticket_controller'
 import { all_inspections, create_inspection } from '../controllers/permit_porter'
 import { customer_dashboard } from '../controllers/project_controller'
+import { all_app_users, filter_users, update_user_data, delete_lead, all_lead, filter_lead, create_job, edit_job, all_jobs, delete_job, admin_main_dashboard } from '../controllers/admin_porter'
+import { sales_main_dashboard } from '../controllers/sales_porter'
 
 
 
@@ -60,9 +59,11 @@ router.route('/forget-password').patch(forget_password_validation, verify_auth_i
 router.route('/logged-in-admin/:page_number/:notification_page_number').get(verify_auth_id, logged_in_admin )
 
 
-// User Management For Admin role alone
+// Admin Porter EP
 
-router.route('/all-users/:page_number').get(verify_auth_id, all_users )
+router.route('/admin-dashboard').get(verify_auth_id, admin_main_dashboard)
+
+router.route('/all-users/:page_number').get(verify_auth_id, all_app_users )
 
 router.route('/all-sales-staff').get(verify_auth_id, all_sales_staff)
 
@@ -78,6 +79,31 @@ router.route('/update-profile-data').patch(verify_auth_id, update_user_validatio
 
 router.route('/delete-user/:user_id').delete(validate_admin_access, admin_delete_user_data )
 
+// Sales Porter EP
+
+router.route('/sales-main-dashboard').get(verify_auth_id, sales_main_dashboard)
+
+router.route('/create-lead').post(verify_auth_id, create_lead_validation, email_exist, create_lead)
+
+router.route('/edit-lead/:lead_id').patch(verify_auth_id, create_lead_validation, update_lead)
+
+router.route('/delete-lead/:lead_id').delete(verify_auth_id, delete_lead)
+
+router.route('/all-leads/:page_number').get(verify_auth_id, all_lead)
+
+router.route("/leads").get(verify_auth_id, leads)
+
+router.route('/filter-leads/:disposition/:page_number').get(verify_auth_id, filter_lead)
+
+router.route('/all-pipeline/:page_number').get(verify_auth_id, all_pipeline )
+
+router.route('/job-contract-details/:page_number').get(verify_auth_id, job_contract_overview)
+
+router.route('/project-information/:page_number').get(verify_auth_id, project_information)
+
+router.route('/project-progress-tracking/:page_number').get(verify_auth_id, installation_overview)
+
+
 // Activity
 
 router.route('/all-activities/:page_number').get(verify_auth_id, all_activity)
@@ -92,19 +118,6 @@ router.route('/all-task-notifications/:page_number').get(verify_auth_id, all_tas
 
 router.route('/filter-task-notifications/:status/:page_number').get(verify_auth_id, filter_task_notification)
 
-// Lead
-
-router.route('/create-lead').post(verify_auth_id, create_lead_validation, email_exist, create_lead)
-
-router.route('/edit-lead/:lead_id').patch(verify_auth_id, create_lead_validation, update_lead)
-
-router.route('/delete-lead/:lead_id').delete(verify_auth_id, delete_lead)
-
-router.route('/all-leads/:page_number').get(verify_auth_id, all_lead)
-
-router.route("/leads").get(verify_auth_id, leads)
-
-router.route('/filter-leads/:disposition/:page_number').get(verify_auth_id, filter_lead)
 
 // Job
 
@@ -132,9 +145,7 @@ router.route('/update-task-progress/:task_id').patch(verify_auth_id, update_task
 
 router.route('/all-tasks/:page_number').get(verify_auth_id, all_tasks)
 
-// Sales Pipeline
 
-router.route('/all-pipeline/:page_number').get(verify_auth_id, all_pipeline )
 
 // Sales Report
 
@@ -170,18 +181,6 @@ router.route('/create-inspection').post(verify_auth_id, create_inspection_valida
 
 router.route('/all-permit').get(verify_auth_id, )
 
-
-// Sales Department
-
-router.route('/sales-main-dashboard').get(verify_auth_id, main_sales_dashboard)
-
-router.route('/sales-pipeline/:page_number').get(verify_auth_id, sales_pipeline_page)
-
-router.route('/job-contract-details/:page_number').get(verify_auth_id, job_contract_overview)
-
-router.route('/project-information/:page_number').get(verify_auth_id, project_information)
-
-router.route('/project-progress-tracking/:page_number').get(verify_auth_id, installation_overview)
 
 // Customer Dept
 
