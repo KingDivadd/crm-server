@@ -81,7 +81,7 @@ export const change_user_activity_status = async(req: CustomRequest, res: Respon
 
         const user = await prisma.user.findUnique({where: {user_id: req.body.user_id}})
 
-        if (user?.user_role == 'admin' && req.user.user_id !== user.user_id) {return res.status(401).json({err: `Not authorized to edit data`})}
+        if (user?.user_role !== 'admin') {return res.status(401).json({err: `Not authorized to edit data`})}
 
         req.body.updated_at = converted_datetime()
 
@@ -110,9 +110,12 @@ export const admin_change_user_data = async(req: CustomRequest, res: Response, n
 
         if (!user_id){ return res.status(400).json({err: 'user id is required'})}
 
-        const user = await prisma.user.findUnique({where: {user_id}})        
+        const user = await prisma.user.findUnique({where: {user_id}})     
+        
+        console.log('user role ', user?.user_role, user?.user_role !== 'admin');
+        
 
-        if (user?.user_role === 'admin' && req.user.user_id !== user.user_id) {return res.status(401).json({err: `Not authorized to edit data`})}
+        if (user?.user_role !== 'admin') {return res.status(401).json({err: `Not authorized to edit data`})}
 
 
         req.body.password = await bcrypt.hash(req.body.password, salt_round);
