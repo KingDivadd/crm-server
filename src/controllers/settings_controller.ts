@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt')
 export const get_settings_information = async(req: CustomRequest, res: Response, next: NextFunction)=>{
     try {
         const user = req.user        
-        
+
         // if admin
         if (user.user_role == 'admin') {
             
@@ -20,7 +20,8 @@ export const get_settings_information = async(req: CustomRequest, res: Response,
                 prisma.company.findUnique({ where: {company_id: user.company_id} }),
 
             ])
-
+            
+            
             return res.status(200).json({msg: 'Fetched Admin Settings information ', user: user_info, company: company_info})
         }else{
             const user_info = await prisma.user.findUnique({ where: {user_id: user.user_id} })
