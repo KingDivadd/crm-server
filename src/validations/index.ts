@@ -299,8 +299,11 @@ export const settings_validation = async (req: Request, res: Response, next: Nex
 export const create_lead_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const schema = Joi.object({
-            customer_name: Joi.string().trim().required(),
-            address: Joi.string().trim().required(),
+            customer_first_name: Joi.string().trim().required(),
+            customer_last_name: Joi.string().trim().required(),
+            city: Joi.string().trim().required(),
+            state: Joi.string().trim().required(),
+            zip: Joi.number().required(),
             phone_number: Joi.string().trim().required(),
             email: Joi.string().email().trim().required(),
             gate_code: Joi.string().trim().required(),

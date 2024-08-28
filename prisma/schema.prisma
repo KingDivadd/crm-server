@@ -77,7 +77,11 @@ model User {
 model Lead {
   lead_id                                 String           @id @default(uuid()) @unique
   lead_ind                                String       @unique
-  customer_name                           String
+  customer_first_name                     String
+  customer_last_name                     String
+  city                                    String
+  state                                   String
+  zip                                     Float @default (0)
   address                                 String?
   email                                   String?
   phone_number                            String?

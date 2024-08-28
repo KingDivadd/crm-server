@@ -26,7 +26,7 @@ export const admin_main_dashboard = async(req: CustomRequest, res: Response)=>{
                     job: {
                         select: { 
                             job_ind: true, 
-                            lead: {select: {customer_name: true, lead_ind: true, assigned_to: {select: {first_name: true, last_name: true, user_id: true} }}} 
+                            lead: {select: {customer_first_name: true, customer_last_name: true, lead_ind: true, assigned_to: {select: {first_name: true, last_name: true, user_id: true} }}} 
                         }
                     }},
                 take: 15, orderBy: {created_at: 'asc'} 
@@ -305,7 +305,7 @@ export const create_job = async(req: CustomRequest, res: Response, next: NextFun
             prisma.notification.create({
                 data: {
                     notification_ind: new_notification_ind,
-                    message: `A new job for ${new_job.lead?.customer_name} has been created.`,
+                    message: `A new job for ${new_job.lead?.customer_first_name} ${new_job.lead?.customer_last_name} has been created.`,
                     subject: `New Job Created.`,
                     lead_id: lead_id,
                 
@@ -426,7 +426,7 @@ export const edit_job = async(req: CustomRequest, res: Response, next: NextFunct
             await prisma.notification.create({
                 data: {
                     notification_ind: new_notification_ind,
-                    message: `Job for ${update_job.lead?.customer_name} has been updated.`,
+                    message: `Job for ${update_job.lead?.customer_first_name} ${update_job.lead?.customer_last_name} has been updated.`,
                     subject: `Job with id ${update_job.job_ind} Updated.`,
                     lead_id: update_job.lead_id,
                     user_id: update_job.lead?.assigned_to_id,
@@ -510,7 +510,7 @@ export const delete_job = async(req: CustomRequest, res: Response, next: NextFun
         await prisma.notification.create({
             data: {
                 notification_ind: new_notification_ind,
-                message: `Job for ${job_exist.lead?.customer_name} has been deleted.`,
+                message: `Job for ${job_exist.lead?.customer_first_name} ${job_exist.lead?.customer_last_name} has been deleted.`,
                 subject: `Job Deleted.`,
             
                 source_id: req.user.user_id,

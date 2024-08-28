@@ -7,7 +7,7 @@ import { salt_round } from '../helpers/constants'
 const bcrypt = require('bcrypt')
 
 export const create_lead = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    const {customer_name, address, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
+    const {customer_first_name, customer_last_name, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
     try {
         const user_id = req.user.user_id
 
@@ -58,7 +58,7 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
         prisma.notification.create({
             data: {
                 notification_ind: new_notification_ind,
-                message: `A new lead has been created for ${new_lead.customer_name}.`,
+                message: `A new lead has been created for ${new_lead.customer_first_name} ${new_lead.customer_last_name}.`,
                 subject: `New Lead Created.`,
                 lead_id: new_lead.lead_id,
             
@@ -71,11 +71,8 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
 
         ])
 
-        const [first_name, last_name] = customer_name.split(' ')
-        const user = {first_name: first_name, last_name: last_name || '', email:email}
-        send_lead_created_email(user)
-        console.log('customer_name ', user);
-        
+        const user = {first_name: customer_first_name, last_name: customer_last_name || '', email:email}
+        send_lead_created_email(user)        
 
         return res.status(201).json({msg: "Lead and Sales Pipeline created successfully", lead: new_lead, pipeline: new_sales_pipeline});
 
@@ -86,7 +83,7 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
 }
 
 export const update_lead = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    const {customer_name, address, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
+    const {customer_first_name, customer_last_name, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
     try {
         
         const {lead_id} = req.params
@@ -130,13 +127,12 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
 
         if (disposition == 'SOLD') {
             const encrypted_password = await bcrypt.hash('password', salt_round);
-            const [first_name, last_name] = customer_name.split(' ');
             const new_user = await prisma.user.create({
 
                 data: {
                     user_ind: new_user_ind,
-                    first_name: first_name,
-                    last_name: last_name  || '',
+                    first_name: customer_first_name,
+                    last_name: customer_last_name,
                     user_role: 'customer',
                     phone_number, password: encrypted_password,email,
                     created_at: converted_datetime(),
@@ -162,7 +158,7 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
             prisma.notification.create({
                 data: {
                     notification_ind: new_notification_ind,
-                    message: `Lead for ${updated_lead.customer_name} updated.`,
+                    message: `Lead for ${updated_lead.customer_first_name} ${updated_lead.customer_last_name} updated.`,
                     subject: `Lead Updated.`,
                     lead_id: updated_lead.lead_id,
                 
@@ -193,7 +189,7 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
             prisma.notification.create({
                 data: {
                     notification_ind: new_notification_ind,
-                    message: `Lead for ${updated_lead.customer_name} updated.`,
+                    message: `Lead for ${updated_lead.customer_first_name} ${updated_lead.customer_last_name} updated.`,
                     subject: `Lead Updated.`,
                     lead_id: updated_lead.lead_id,
                 
