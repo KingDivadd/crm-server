@@ -7,7 +7,7 @@ import { salt_round } from '../helpers/constants'
 const bcrypt = require('bcrypt')
 
 export const create_lead = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    const {customer_first_name, customer_last_name, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
+    const {customer_first_name, customer_last_name, address, phone_number, email, gate_code, assigned_to_id, appointment_date, disposition} = req.body
     try {
         const user_id = req.user.user_id
 

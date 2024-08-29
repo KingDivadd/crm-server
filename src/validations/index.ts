@@ -304,6 +304,7 @@ export const create_lead_validation = async (req: Request, res: Response, next: 
             city: Joi.string().trim().required(),
             state: Joi.string().trim().required(),
             zip: Joi.number().required(),
+            address: Joi.string().trim().allow('').optional(),
             phone_number: Joi.string().trim().required(),
             email: Joi.string().email().trim().allow('').optional(),
             gate_code: Joi.string().trim().required(),
