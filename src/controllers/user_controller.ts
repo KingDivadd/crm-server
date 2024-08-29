@@ -112,10 +112,9 @@ export const admin_change_user_data = async(req: CustomRequest, res: Response, n
 
         const user = await prisma.user.findUnique({where: {user_id}})     
         
-        console.log('user role ', user?.user_role, user?.user_role !== 'admin');
-        
+        if (!user) { return res.status(404).json({err: 'Selected user not found'})  }        
 
-        if (user?.user_role !== 'admin') {return res.status(401).json({err: `Not authorized to edit data`})}
+        if (req.user.user_role !== 'admin') {return res.status(401).json({err: `Not authorized to edit data`})}
 
 
         req.body.password = await bcrypt.hash(req.body.password, salt_round);
