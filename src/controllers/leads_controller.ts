@@ -11,14 +11,11 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
     try {
         const user_id = req.user.user_id
 
-        const [lead_exist, last_lead,  last_pipeline, last_notification] = await Promise.all([
-            prisma.lead.findFirst({ where: {email: req.body.email} }),
+        const [ last_lead,  last_pipeline, last_notification] = await Promise.all([
             prisma.lead.findFirst({ orderBy: {created_at: 'desc'}}),
             prisma.sales_Pipeline.findFirst({ orderBy: {created_at: 'desc'}}),
             prisma.notification.findFirst({ orderBy: {created_at: 'desc'}}),
         ]) 
-
-        if (lead_exist){return res.status(400).json({err: 'Lead with selected email already exist.'})}
 
         const last_lead_number = last_lead ? parseInt(last_lead.lead_ind.slice(2)) : 0;
         const new_lead_number = last_lead_number + 1;
@@ -44,7 +41,7 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
         })
 
         const [new_sales_pipeline, notification] = await Promise.all([
-             prisma.sales_Pipeline.create({
+            prisma.sales_Pipeline.create({
             data: {
                 pipeline_ind: new_pipeline_ind,
                 lead_id: new_lead.lead_id, 
