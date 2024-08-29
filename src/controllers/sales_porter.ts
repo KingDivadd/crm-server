@@ -8,6 +8,7 @@ import { send_job_created_email } from '../helpers/email'
 export const sales_main_dashboard = async(req: CustomRequest, res: Response, next: NextFunction)=>{
     try {
         const user_id = req.user.user_id
+        const user_role = req.user.user_role
 
         if (req.user.user_role !== 'sales'){ return res.status(401).json({err: 'Dashboard information only meant for sales personnel ' })}
 
@@ -19,7 +20,15 @@ export const sales_main_dashboard = async(req: CustomRequest, res: Response, nex
             
             prisma.lead.findMany({include: {assigned_to: true }, take: 15, orderBy: {created_at: 'desc'}}),
             prisma.task.findMany({include: {job: {select: {job_ind: true}}}, take: 15, orderBy: {created_at: 'desc'}}),
-            prisma.notification.findMany({include: {source: true, user: true , lead: true, job: true, task: true}, take: 15, orderBy: {created_at: 'desc'} })
+            prisma.notification.findMany({where: {
+                OR: [
+                    { user_id: user_id }, // User can see their notifications
+                    { 
+                        user: { user_role: { not: 'customer' } }, // Admin can see all notifications except customers
+                        AND: user_role === 'admin' ? {} : { user_id: user_id }
+                    }
+                ]
+            } ,include: {source: true, user: true , lead: true, job: true, task: true}, take: 15, orderBy: {created_at: 'desc'} })
 
         ])
         

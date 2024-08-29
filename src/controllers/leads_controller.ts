@@ -49,7 +49,7 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
                 pipeline_ind: new_pipeline_ind,
                 lead_id: new_lead.lead_id, 
                 disposition: disposition, 
-                status: 'INITIAL_CONTACT',
+                status: disposition === 'SOLD' ? 'SOLD' : 'INITIAL_CONTACT',
                 created_at: converted_datetime(),
                 updated_at: converted_datetime()
             }
@@ -72,7 +72,9 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
         ])
 
         const user = {first_name: customer_first_name, last_name: customer_last_name || '', email:email}
-        send_lead_created_email(user)        
+        if (email) {   
+            send_lead_created_email(user)        
+        }
 
         return res.status(201).json({msg: "Lead and Sales Pipeline created successfully", lead: new_lead, pipeline: new_sales_pipeline});
 
@@ -130,6 +132,7 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
             const new_user = await prisma.user.create({
 
                 data: {
+                    
                     user_ind: new_user_ind,
                     first_name: customer_first_name,
                     last_name: customer_last_name,
@@ -150,6 +153,7 @@ export const update_lead = async(req: CustomRequest, res: Response, next: NextFu
                 prisma.sales_Pipeline.update({
                 where: { pipeline_id: pipeline.pipeline_id },
                 data: {
+                    status: disposition === 'SOLD' ? 'SOLD' : 'NEGOTIATION',
                     disposition: disposition ?? pipeline.disposition,  // Update disposition if provided
                     updated_at: converted_datetime()
                 }

@@ -9,9 +9,14 @@ const jwt = require('jsonwebtoken')
 
 
 export const email_exist = async (req: Request, res: Response, next: NextFunction) => {
+    const {email} = req.body
     try {
 
-        const user_exist = await prisma.user.findUnique({where: {email: req.body.email}})
+        if (!email) {
+            return next()
+        }
+
+        const user_exist = await prisma.user.findUnique({where: {email}})
 
         if (user_exist) { return res.status(409).json({ err: 'email already registered to another user' }) }
 
