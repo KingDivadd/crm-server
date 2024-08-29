@@ -17,7 +17,6 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
             prisma.notification.findFirst({ orderBy: {created_at: 'desc'}}),
         ]) 
 
-
         const last_lead_number = last_lead ? parseInt(last_lead.lead_ind.slice(2)) : 0;
         const new_lead_number = last_lead_number + 1;
         const new_lead_ind = `LD${new_lead_number.toString().padStart(4, '0')}`;
@@ -42,7 +41,7 @@ export const create_lead = async(req: CustomRequest, res: Response, next: NextFu
         })
 
         const [new_sales_pipeline, notification] = await Promise.all([
-             prisma.sales_Pipeline.create({
+            prisma.sales_Pipeline.create({
             data: {
                 pipeline_ind: new_pipeline_ind,
                 lead_id: new_lead.lead_id, 
