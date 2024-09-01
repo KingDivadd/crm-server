@@ -113,7 +113,7 @@ export const admin_setup_validation = async (req: Request, res: Response, next: 
     }
 }
 
-export const forget_password_validation = async (req: Request, res: Response, next: NextFunction) => {
+export const reset_password_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
 
         const schema = Joi.object({
@@ -296,21 +296,30 @@ export const settings_validation = async (req: Request, res: Response, next: Nex
 }
 
 
-export const create_lead_validation = async (req: Request, res: Response, next: NextFunction) => {
+export const lead_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const schema = Joi.object({
+            lead_designer_id: Joi.string().trim().required(),
+
             customer_first_name: Joi.string().trim().required(),
             customer_last_name: Joi.string().trim().required(),
-            city: Joi.string().trim().required(),
-            state: Joi.string().trim().required(),
-            zip: Joi.number().required(),
-            address: Joi.string().trim().allow('').optional(),
-            phone_number: Joi.string().trim().required(),
-            email: Joi.string().email().trim().allow('').optional(),
-            gate_code: Joi.string().trim().required(),
-            assigned_to_id: Joi.string().trim().required(),
-            appointment_date: Joi.string().trim().allow('').optional(),
-            disposition: Joi.string().trim().required(),
+            customer_city: Joi.string().trim().required(),
+            customer_state: Joi.string().trim().required(),
+            customer_zip: Joi.number().optional(),
+            customer_address: Joi.string().trim().allow('').optional(),
+            customer_phone: Joi.string().trim().allow('').optional(),
+            disposition: Joi.string().valid('sold', 'not_sold').required(),
+
+            customer_email: Joi.when('disposition',{
+                is: 'sold',
+                then: Joi.string().trim().email().required(),
+                otherwise: Joi.string().allow('').optional()
+            }),
+
+            gate_code: Joi.string().trim().allow('').optional(),
+            appointment_date: Joi.string().trim().required(),
+            desired_structrue: Joi.string().trim().allow('').optional(),
+            contract_document: Joi.array().optional(),
 
         })
 
@@ -327,22 +336,49 @@ export const create_lead_validation = async (req: Request, res: Response, next: 
     }
 }
 
-export const create_job_validation = async (req: Request, res: Response, next: NextFunction) => {
+export const job_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const schema = Joi.object({
+
+            // Basic job info
+            job_number: Joi.string().trim().allow('').optional(),
             lead_id: Joi.string().trim().required(),
             contract_amount: Joi.number().required(),
-            contract_date: Joi.string().trim().required(),
-            
+            contract_date: Joi.number().required(),
 
-            cover_size: Joi.string().trim().allow(null,'').optional(),
-            cover_color: Joi.string().trim().allow(null,'').optional(),
-            attached: Joi.boolean().optional(),
-            structure_type: Joi.string().trim().allow(null,'').optional(),
-            description: Joi.string().trim().allow(null,'').optional(),
-            end_cap_style: Joi.string().trim().allow(null,'').optional(),
-            trim_color: Joi.string().trim().allow(null,'').optional(),
+            // Permits
+            hoa_permit_status: Joi.string().trim().required(),
+            hoa_permit_submit_date: Joi.number().optional(),
+            hoa_permit_approval_date: Joi.number().optional(),
+            hoa_permit_number: Joi.number().optional(),
+            hoa_permit_cost: Joi.number().optional(),
+            hoa_permit_document:Joi.array().items(Joi.string().trim().optional()).optional(),
             
+            engineering_permit_status: Joi.string().trim().required(),
+            engineering_permit_submit_date: Joi.number().optional(),
+            engineering_permit_approval_date: Joi.number().optional(),
+            engineering_permit_number: Joi.number().optional(),
+            engineering_permit_cost: Joi.number().optional(),
+            engineering_permit_document:Joi.array().items(Joi.string().trim().optional()).optional(),
+            
+            general_permit_status: Joi.string().trim().required(),
+            general_permit_submit_date: Joi.number().optional(),
+            general_permit_approval_date: Joi.number().optional(),
+            general_permit_number: Joi.number().optional(),
+            general_permit_cost: Joi.number().optional(),
+            general_permit_document:Joi.array().items(Joi.string().trim().optional()).optional(),
+            
+            // below are project info
+            attached: Joi.string().trim().allow('').optional(),
+            structure_type: Joi.string().trim().allow('').optional(),
+            cover_size: Joi.string().trim().allow('').optional(),
+            end_cap_style: Joi.string().trim().allow('').optional(),
+            cover_color: Joi.string().trim().allow('').optional(),
+            trim_color: Joi.string().trim().allow('').optional(),
+            description: Joi.string().trim().allow('').optional(),
+
+            paperwork_upload: Joi.array().optional(),
+            photo_upload: Joi.array().optional(),
 
         })
 
@@ -359,42 +395,66 @@ export const create_job_validation = async (req: Request, res: Response, next: N
     }
 }
 
-export const update_job_validation = async (req: Request, res: Response, next: NextFunction) => {
+export const edit_project_validation = async (req: Request, res: Response, next: NextFunction)=>{
     try {
-        
         const schema = Joi.object({
-            lead_id: Joi.string().trim().required(),
-            contract_amount: Joi.number().required(),
-            contract_date: Joi.string().trim().required(),
-            
-            hoa_permit_status: Joi.string().trim().allow(null,'').optional(),
-            hoa_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
-            hoa_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
-            hoa_permit_documents: Joi.array().optional(),
+            attached: Joi.string().trim().allow('').optional(),
+            structure_type: Joi.string().trim().allow('').optional(),
+            cover_size: Joi.string().trim().allow('').optional(),
+            end_cap_style: Joi.string().trim().allow('').optional(),
+            cover_color: Joi.string().trim().allow('').optional(),
+            trim_color: Joi.string().trim().allow('').optional(),
+            description: Joi.string().trim().allow('').optional(),
 
-            engineering_permit_status: Joi.string().trim().allow(null,'').optional(),
-            engineering_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
-            engineering_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
-            engineering_permit_documents: Joi.array().optional(),
+            paperwork_upload: Joi.array().optional(),
+            photo_upload: Joi.array().optional(),
 
-            electrical_permit_status: Joi.string().trim().allow(null,'').optional(),
-            electrical_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
-            electrical_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
-            electrical_permit_documents: Joi.array().optional(),
+            service_ticket_bill_sheets: Joi.array().optional(),
+            bill_sheets: Joi.array().optional(),
+            job_receipt_upload: Joi.array().optional(),
+            regimented_photo_upload: Joi.array().optional(),
+            project_details_and_instruction: Joi.array().optional(),
+        })
 
-            general_permit_status: Joi.string().trim().allow(null,'').optional(),
-            general_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
-            general_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
-            general_permit_documents: Joi.array().optional(),
+        const { error: validation_error } = schema.validate(req.body)
 
-            cover_size: Joi.string().trim().allow(null,'').optional(),
-            cover_color: Joi.string().trim().allow(null,'').optional(),
-            attached: Joi.boolean().optional(),
-            structure_type: Joi.string().trim().allow(null,'').optional(),
-            description: Joi.string().trim().allow(null,'').optional(),
-            end_cap_style: Joi.string().trim().allow(null,'').optional(),
-            trim_color: Joi.string().trim().allow(null,'').optional(),
-            
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (err:any) {
+        return res.status(422).json({err: 'Error occured while validating project update data ', error: err})
+    }
+}
+
+
+export const install_validation = async (req: Request, res: Response, next: NextFunction)=>{
+    try {
+        const schema = Joi.object({
+            footing_date: Joi.number().optional(),
+            footing_crew: Joi.string().trim().allow('').optional(),
+            footing_bill_sheet: Joi.string().trim().allow('').optional(),
+
+            set_post_date: Joi.number().optional(),
+            set_post_crew: Joi.string().trim().allow('').optional(),
+            set_post_bill_sheet: Joi.string().trim().allow('').optional(),
+
+            demo_date: Joi.number().optional(),
+            demo_crew: Joi.string().trim().allow('').optional(),
+            demo_bill_sheet: Joi.string().trim().allow('').optional(),
+
+            install_date: Joi.number().optional(),
+            install_crew: Joi.string().trim().allow('').optional(),
+            install_bill_sheet: Joi.string().trim().allow('').optional(),
+
+            electrical_date: Joi.number().optional(),
+            electrical_crew: Joi.string().trim().allow('').optional(),
+            electrical_bill_sheet: Joi.string().trim().allow('').optional(),
+
+            inspection_date: Joi.number().optional(),
+            inspection_status: Joi.string().trim().valid('n_a','pass', 'fail').required()
 
         })
 
@@ -406,46 +466,46 @@ export const update_job_validation = async (req: Request, res: Response, next: N
         }
 
         return next()
-    } catch (error) {
-        return res.status(422).json({ err: 'Error occured while validating job creation input ',error })
+    } catch (err:any) {
+        return res.status(422).json({err: 'Error occured while validating project install data ', error: err})
     }
 }
 
-export const update_task_progress_validation = async (req: Request, res: Response, next: NextFunction) => {
+
+
+export const payment_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const schema = Joi.object({
+            payment_phase: Joi.string().trim().valid('deposit','scheduling', 'delivery', 'construction_completion', 'electrical_completion').required(),
+            amount: Joi.number().optional().required(),
+            payment_method: Joi.string().trim().valid('cash', 'credit_card', 'check', 'bank_transfer').required(),
+            payment_receipt: Joi.string().trim().allow('').optional()
             
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating customer payment data ',error })
+    }
+}
+
+export const invoice_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
             job_id: Joi.string().trim().required(),
-
-            hoa_permit_status: Joi.string().trim().allow(null,'').optional(),
-            hoa_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
-            hoa_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
-            hoa_permit_documents: Joi.array().optional(),
-            hoa_permit_number: Joi.string().allow(null,'').optional(),
-
-            engineering_permit_status: Joi.string().trim().allow(null,'').optional(),
-            engineering_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
-            engineering_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
-            engineering_permit_documents: Joi.array().optional(),
-            engineering_permit_number: Joi.string().allow(null,'').optional(),
-
-            electrical_permit_status: Joi.string().trim().allow(null,'').optional(),
-            electrical_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
-            electrical_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
-            electrical_permit_documents: Joi.array().optional(),
-            electrical_permit_number: Joi.string().allow(null,'').optional(),
-
-            general_permit_status: Joi.string().trim().allow(null,'').optional(),
-            general_permit_submit_date: Joi.string().trim().allow(null,'').optional(),
-            general_permit_approval_date: Joi.string().trim().allow(null,'').optional(),
-            general_permit_documents: Joi.array().optional(),
-            general_permit_number: Joi.string().allow(null,'').optional(),
-
-            note: Joi.string().trim().allow(null,'').optional(),
-            permit_number: Joi.string().trim().allow(null,'').optional(),
-
+            customer_id: Joi.string().trim().required(),
+            invoice_type: Joi.string().trim().valid('duralum', 'four_k', 'js_service', 'others').required(),
+            expenses_receipts: Joi.array().items(Joi.string().optional()).optional(),
+            gas: Joi.array().items(Joi.string().optional()).optional(),
+            payment_receipt: Joi.string().trim().allow('').optional()
             
-
         })
 
         const { error: validation_error } = schema.validate(req.body)
@@ -457,7 +517,100 @@ export const update_task_progress_validation = async (req: Request, res: Respons
 
         return next()
     } catch (error) {
-        return res.status(422).json({ err: 'Error occured while validating job creation input ',error })
+        return res.status(422).json({ err: 'Error occured while validating customer invoice data ',error })
+    }
+}
+
+export const material_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            install_id: Joi.string().trim().required(),
+            description: Joi.string().trim().allow('').optional(),
+            quantity: Joi.number().optional(),
+            material_received_date: Joi.number().required(),
+            material_delivered_date: Joi.number().required()
+            
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating install materials ',error })
+    }
+}
+
+export const service_ticket_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            ticket_status: Joi.string().trim().valid('open', 'assigned', 'in_progress', 'resolved', 'closed'),
+            uploads: Joi.array().items(Joi.string()).required(),
+            description: Joi.string().trim().required(),
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating service ticket data ',error })
+    }
+}
+
+export const rfi_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            rfi_assignee_id: Joi.string().trim().required(),
+            project_id: Joi.string().trim().required(),
+
+            description: Joi.string().trim().required(),
+            due_date: Joi.number().optional(),
+            status: Joi.string().valid('open', 'in_progress', 'closed').required(),
+
+            response: Joi.string().trim().allow('').optional(),
+            
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating task creation input ',error })
+    }
+}
+
+export const red_line_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            redLine_assignee_id: Joi.string().trim().required(),
+            project_id: Joi.string().trim().required(),
+            description: Joi.string().trim().required(),
+            status: Joi.string().trim().valid('pending', 'approved', 'rejected').optional()
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating red line input ',error })
     }
 }
 

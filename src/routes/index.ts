@@ -1,190 +1,162 @@
 import express from 'express'
 
-// file imports
 
-import {admin_complete_signup, admin_signup, generate_user_otp, reset_password, signup_generate_user_otp, 
-    user_login, verify_user_otp,
-
-    logged_in_admin,
-    resend_otp,
-    get_user_info,
-    logged_in_user} from '../controllers/authentication'
-
-import {admin_edit_user_validation, admin_setup_validation, admin_signup_validation, create_inspection_validation, create_job_validation, create_lead_validation, create_task_validation, create_ticket_validation, create_user_validation, edit_user_active_status_validation, forget_password_validation, generate_otp_validation , login_validation, update_job_validation, update_settings_validation, update_task_progress_validation, update_user_validation, verify_otp_validation} from '../validations/index'
-
-import {email_exist, validate_admin_access, verify_auth_id, verify_otp} from '../helpers/auth_helper'
-
-import {test_connection, test_db_connection} from "../controllers/test_server_connection"
-
-import { admin_change_user_data, admin_delete_user_data, all_sales_staff, change_user_activity_status, create_new_user } from '../controllers/user_controller'
-import { all_activity } from '../controllers/activity_controller'
-import { all_notification, all_task_notification, filter_task_notification, update_notification } from '../controllers/notification_controller'
-import {  create_lead,  installation_overview, job_contract_overview, leads, project_information, update_lead } from '../controllers/leads_controller'
-import { get_settings_information, update_settings_information } from '../controllers/settings_controller'
-import { sales_report_page_info } from '../controllers/report'
-import {  create_task_data, all_project } from '../controllers/job_controller'
-import { create_task, edit_task, all_tasks, start_task, task_progress_update } from '../controllers/task_controller'
-import { all_ticket, create_ticket, user_projects } from '../controllers/ticket_controller'
-import { all_inspections, create_inspection } from '../controllers/permit_porter'
-import { customer_dashboard } from '../controllers/project_controller'
-import { all_app_users, filter_users, update_user_data, delete_lead, all_lead, filter_lead, create_job, edit_job, all_jobs, delete_job, admin_main_dashboard } from '../controllers/admin_porter'
-import { sales_main_dashboard, sales_pipeline_page } from '../controllers/sales_porter'
+import {main_permit_dashboard} from "../controllers/permit_porter"
+import {close_rfi, create_rfi, edit_rfi, main_engineering_dashboard } from '../controllers/engineering_porter'
+import { main_designer_dashboard,} from '../controllers/designer_porter'
+import { create_new_invoice, edit_invoice, main_accounting_dashboard} from '../controllers/accounting_porter'
+import {all_paginated_invoice, all_paginated_payments, create_service_ticket, customer_main_dashbaord, edit_service_ticket, make_new_payment} from '../controllers/customer_porter'
+import { add_install_material, add_project_installs, edit_install_material, edit_project_installs, main_installer_dashboard} from "../controllers/installer_porter"
+import {all_notification, get_settings_information, update_notification, update_settings_information} from "../controllers/general"
+import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
+import { admin_complete_signup, admin_signup, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, verify_user_otp } from '../controllers/authentication'
+import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation } from '../validations'
+import { add_new_user, admin_main_dashboard, all_designers, all_paginated_users, delete_user, edit_user_data } from '../controllers/admin_porter'
+import { add_new_lead, all_lead, all_paginated_jobs, all_paginated_leads, all_paginated_projects, create_new_job, delete_job, delete_lead, edit_job, edit_lead, edit_project, main_sales_dashboard } from '../controllers/sales_porter'
 
 
 
 const router = express.Router()
 
-
 // Authentication
 
-router.route('/logged-in-user').get(verify_auth_id, logged_in_user)
+router.route('/admin-signup').post(admin_signup_validation, email_exist, admin_signup)
 
-router.route('/admin-signup').post(admin_signup_validation, email_exist , admin_signup)
+router.route('/admin-complete-signup').patch(verify_auth_id, admin_setup_validation, admin_complete_signup)
 
-router.route('/complete-admin-setup').patch(verify_auth_id, admin_setup_validation, admin_complete_signup, signup_generate_user_otp )
+router.route('/login').post(login_validation, user_login)
 
-router.route('/generate-otp').post(generate_otp_validation, generate_user_otp)
+router.route('/signup-generate-user-otp').get(verify_auth_id, signup_generate_user_otp)
 
-router.route('/regenerate-otp').get(verify_auth_id, resend_otp)
+router.route('/generate-user-otp').get(generate_user_otp)
 
-router.route('/get-auth-status').get(verify_auth_id, get_user_info)
+router.route('/resend-otp').get(verify_auth_id, resend_otp)
 
-router.route('/verify-otp').post(verify_otp_validation, verify_otp, verify_user_otp)
+router.route('/verify-user-otp').post(verify_otp, verify_user_otp)
 
-router.route('/login').post(login_validation , user_login)
+router.route('/reset-password').post(verify_auth_id, reset_password_validation, reset_password )
 
-router.route('/forget-password').patch(forget_password_validation, verify_auth_id, reset_password )
-
-router.route('/logged-in-admin/:page_number/:notification_page_number').get(verify_auth_id, logged_in_admin )
-
-
-// Admin Porter EP
+// Admin Porter
 
 router.route('/admin-dashboard').get(verify_auth_id, admin_main_dashboard)
 
-router.route('/all-users/:page_number').get(verify_auth_id, all_app_users )
+router.route('/all-paginated-users/:page_number').get(verify_auth_id, all_paginated_users)
 
-router.route('/all-sales-staff').get(verify_auth_id, all_sales_staff)
+router.route('/all-designers').post(verify_auth_id, all_designers)
 
-router.route('/filter-users/:page_number').get(verify_auth_id, filter_users )
+router.route('/create-user').post(verify_auth_id, create_user_validation, add_new_user)
 
-router.route('/create-user').post(validate_admin_access, create_user_validation, email_exist, create_new_user)
+router.route('/update-user-data/:user_id').post(verify_auth_id, admin_edit_user_validation , edit_user_data)
 
-router.route('/admin-update-user-active-status').patch(validate_admin_access, edit_user_active_status_validation, change_user_activity_status )
-
-router.route('/admin-update-user-data/:user_id').patch(validate_admin_access, admin_edit_user_validation, admin_change_user_data)
-
-router.route('/update-profile-data').patch(verify_auth_id, update_user_validation, update_user_data)
-
-router.route('/delete-user/:user_id').delete(validate_admin_access, admin_delete_user_data )
-
-// Sales Porter EP
-
-router.route('/sales-main-dashboard').get(verify_auth_id, sales_main_dashboard)
-
-router.route('/create-lead').post(verify_auth_id, create_lead_validation, email_exist, create_lead)
-
-router.route('/edit-lead/:lead_id').patch(verify_auth_id, create_lead_validation, update_lead)
-
-router.route('/delete-lead/:lead_id').delete(verify_auth_id, delete_lead)
-
-router.route('/all-leads/:page_number').get(verify_auth_id, all_lead)
-
-router.route("/leads").get(verify_auth_id, leads)
-
-router.route('/filter-leads/:disposition/:page_number').get(verify_auth_id, filter_lead)
-
-router.route('/pipeline-dashbpard/:page_number').get(verify_auth_id, sales_pipeline_page )
-
-router.route('/job-contract-details/:page_number').get(verify_auth_id, job_contract_overview)
-
-router.route('/project-information/:page_number').get(verify_auth_id, project_information)
-
-router.route('/project-progress-tracking/:page_number').get(verify_auth_id, installation_overview)
+router.route('/delete-user/:user_id').delete(verify_auth_id, delete_user)
 
 
-// Activity
+// SALES PORTER
 
-router.route('/all-activities/:page_number').get(verify_auth_id, all_activity)
+router.route('/sales-dashboard').get(verify_auth_id, main_sales_dashboard)
 
-// Notification
+// Lead
 
-router.route('/update-notification-status/:notification_id').patch(verify_auth_id, update_notification)
+router.route('/all-paginated-leads/:page_number').get(verify_auth_id, all_paginated_leads)
 
-router.route('/all-notifications/:page_number').get(verify_auth_id, all_notification)
+router.route('/sold-lead').get(verify_auth_id, all_lead)
 
-router.route('/all-task-notifications/:page_number').get(verify_auth_id, all_task_notification)
+router.route('/new-lead').post(verify_auth_id, lead_validation, add_new_lead )
 
-router.route('/filter-task-notifications/:status/:page_number').get(verify_auth_id, filter_task_notification)
+router.route('/edit-lead/:lead_id').patch(verify_auth_id, lead_validation, edit_lead )
 
+router.route('/delete-lead/:lead_id').delete(verify_auth_id, delete_lead )
 
 // Job
 
-router.route('/create-job').post(verify_auth_id, create_job_validation, create_job)
+router.route('/all-paginated-jobs/:page_number').get(verify_auth_id, all_paginated_jobs)
 
-router.route('/edit-job/:job_id').patch(verify_auth_id, update_job_validation, edit_job)
+router.route('/all-paginated-project/:page_number').get(verify_auth_id, all_paginated_projects )
 
-router.route('/all-jobs/:page_number').get(verify_auth_id, all_jobs)
+router.route('/create-job').post(verify_auth_id, job_validation, create_new_job)
 
-router.route('/jobs').get(verify_auth_id, create_task_data)
+router.route('/edit-job/:job_id').patch(verify_auth_id, job_validation, edit_job)
 
 router.route('/delete-job/:job_id').delete(verify_auth_id, delete_job)
 
-router.route('/all-projects/:page_number').get(verify_auth_id, all_project)
-
-// Task
-
-router.route('/create-task').post(verify_auth_id, create_task_validation, create_task)
-
-router.route('/start-task/:task_id').patch(verify_auth_id, start_task)
-
-router.route('/edit-task/:task_id').patch(verify_auth_id, create_task_validation, edit_task)
-
-router.route('/update-task-progress/:task_id').patch(verify_auth_id, update_task_progress_validation, task_progress_update )
-
-router.route('/all-tasks/:page_number').get(verify_auth_id, all_tasks)
+router.route('/edit-project/:project_id').patch(verify_auth_id, edit_project_validation, edit_project )
 
 
+// Designer / Operation Porter
 
-// Sales Report
+router.route('/designer-dashboard').get(verify_auth_id, main_designer_dashboard)
 
-router.route('/report-dashboard/:page_number').get(verify_auth_id, sales_report_page_info)
+// router.route('/edit-job/:job_id').patch(verify_auth_id, job_validation, edit_job)
 
-// Service Ticket
 
-router.route('/user-projects').get(verify_auth_id, user_projects)
+// Installer Porter
 
-router.route('/all-ticket/:page_number').get(verify_auth_id, all_ticket)
+router.route('/installer-dashboard').get(verify_auth_id, main_installer_dashboard )
 
-router.route('/create-ticket').post(verify_auth_id, create_ticket_validation, create_ticket )
+// router.route('/all-paginated-jobs/:page_number').get(verify_auth_id, all_paginated_jobs)
 
-// Test route
+// router.route('/all-paginated-project/:page_number').get(verify_auth_id, all_paginated_projects )
 
-router.route('/test-connection').get(test_connection)
+router.route('/add-project-install/:project_id').post(verify_auth_id, install_validation, add_project_installs)
 
-router.route('/test-db-connection').get(test_db_connection)
+router.route('/edit-project-install/:install_id').post(verify_auth_id, install_validation, edit_project_installs)
 
-// Settins
+router.route('/add-materials-ordered/:install_id').post(verify_auth_id, material_validation, add_install_material)
+
+router.route('/edit-materials-ordered/:install_id/:material_id').post(verify_auth_id, material_validation, edit_install_material)
+
+
+// Customer Porter
+
+router.route('/customer-dashboard').get(verify_auth_id, customer_main_dashbaord )
+
+router.route('/all-paginated-invoice').get(verify_auth_id, all_paginated_invoice)
+
+router.route('/make-payment/:invoice_id').post(verify_auth_id, payment_validation, make_new_payment)
+
+router.route('/all-paginated-payment').get(verify_auth_id, all_paginated_payments)
+
+router.route('/create-service-ticket/:project_id').post(verify_auth_id, service_ticket_validation, create_service_ticket )
+
+router.route('/edit-service-ticket/:ticket_id/:project_id').post(verify_auth_id, service_ticket_validation, edit_service_ticket )
+
+
+// Engineering Porter
+
+router.route('/engineering-dashboard').get(verify_auth_id, main_engineering_dashboard )
+
+router.route('/create-rfi').post(verify_auth_id, rfi_validation, create_rfi)
+
+router.route('/edit-rfi/:rfi_id').patch(verify_auth_id, rfi_validation, edit_rfi)
+
+router.route('/close-rfi/:rfi_id').patch(verify_auth_id, close_rfi )
+
+// Permit Porter
+
+router.route('/permit-dashboard').get(verify_auth_id, main_permit_dashboard )
+
+router.route('/create-red-line').post(verify_auth_id, red_line_validation )
+
+// Electrical Porter
+
+
+// HR/Accounting Porter
+
+router.route('/accounting-dashboard').post(verify_auth_id, main_accounting_dashboard)
+
+router.route('/create-invoice').post(verify_auth_id, invoice_validation, create_new_invoice )
+
+router.route('/edit-invoice/:invoice_id').patch(verify_auth_id, invoice_validation, edit_invoice )
+
+// General
 
 router.route('/settings-info').get(verify_auth_id, get_settings_information)
 
 router.route('/update-settings-info').patch(verify_auth_id, update_settings_validation, update_settings_information)
 
-// router.route('/update-settings').patch(verify_auth_id, settings_validation, )
+router.route('/all-notifications/:page_number').get(verify_auth_id, all_notification)
 
-// Permit Page
-
-router.route('/all-inspections').get(verify_auth_id, all_inspections)
-
-router.route('/create-inspection').post(verify_auth_id, create_inspection_validation, create_inspection)
-
-router.route('/all-permit').get(verify_auth_id, )
-
-
-// Customer Dept
-
-router.route('/customer-dashboard').get(verify_auth_id, customer_dashboard)
-
+router.route('/update-notification-status/:notification_id').patch(verify_auth_id, update_notification)
 
 
 export default router

@@ -15,7 +15,6 @@ import { CORS_OPTION, jwt_secret, port, redis_url } from './helpers/constants';
 import connectToMongoDB from './config/mongodb';
 
 import redis_client from './helpers/redis_helper';
-import { test_send_email } from './controllers/test_server_connection';
 const jwt = require('jsonwebtoken')
 
 

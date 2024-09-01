@@ -8,25 +8,6 @@ import { CustomRequest } from '../helpers/interface'
 import converted_datetime from '../helpers/date_time_elemets'
 const bcrypt = require('bcrypt')
 
-export const logged_in_user = async(req: CustomRequest, res: Response)=>{
-    try {
-
-        const user_id = req.user.user_id
-
-        const [user, notification] = await Promise.all([
-            prisma.user.findFirst({where: {user_id}}),
-
-            prisma.notification.findMany({})
-        ])
-
-        return res.status(200).json({user, notification})
-        
-    } catch (err:any) {
-        console.log('Error occured while fetching user data', err);
-        return res.status(500).json({err:'Error occured while fetching user data', error:err});
-        
-    }
-}
 
 export const admin_signup = async(req:Request, res: Response, next: NextFunction)=>{
     const {last_name, first_name, email, password, phone_number} = req.body
@@ -43,8 +24,8 @@ export const admin_signup = async(req:Request, res: Response, next: NextFunction
 
         const staff = await prisma.user.create({
             data: {
-                user_ind: new_user_ind,
-                first_name, last_name, email, password: encrypted_password, user_role: 'admin', phone_number,
+                user_ind: new_user_ind, first_name, last_name, email, 
+                password: encrypted_password, user_role: 'super_admin', phone_number,
 
                 created_at: converted_datetime(),
                 updated_at: converted_datetime(),
@@ -71,7 +52,10 @@ export const admin_signup = async(req:Request, res: Response, next: NextFunction
 export const user_login = async(req: Request, res: Response, next: NextFunction)=>{
     const {email, password} = req.body
     try {
-        const staff = await prisma.user.findUnique({ where: {email}, include: {company: true} })
+        const [staff, last_tracking] = await Promise.all([
+            prisma.user.findUnique({ where: {email}, include: {company: true} }),
+            prisma.user_Tracking.findFirst({ orderBy: {created_at: 'desc'} })
+        ]) 
 
         if (!staff){return res.status(404).json({err: 'Incorrect email address, please check email and try again.'})}
 
@@ -85,6 +69,23 @@ export const user_login = async(req: Request, res: Response, next: NextFunction)
         const new_auth_id:any = await redis_auth_store(staff, 60 * 60 * 23)
         
         res.setHeader('x-id-key', new_auth_id)
+
+        const last_tracking_number = last_tracking ? parseInt(last_tracking.tracking_ind.slice(2)) : 0;
+        const new_tracking_number = last_tracking_number + 1;
+        const new_tracking_ind = `TR${new_tracking_number.toString().padStart(4, '0')}`;
+
+        await prisma.user_Tracking.create({
+            data: {
+                tracking_ind: new_tracking_ind,
+                user: {connect: {user_id: staff.user_id}},
+                action_type: 'login',
+                action_details: {
+                    login_time: converted_datetime(),
+                },
+                created_at: converted_datetime(),
+                updated_at: converted_datetime(),
+            }
+        });
 
         return res.status(200).json({msg:'Login successful', user: staff})
         
@@ -134,12 +135,12 @@ export const admin_complete_signup = async(req: CustomRequest, res: Response, ne
             // If a company already exist, just go ahead and update that
             
             const [updated_admin_model, updated_company] = await Promise.all([
-            prisma.user.update({ where: {user_id}, data: {phone_number, country_code, updated_at: converted_datetime()}, include: {company: true}}),
-            
-            prisma.company.update({
-                where: {company_id: user_company.company_id}, 
-                data: {company_name, company_address, company_phone, organization_size, created_at: converted_datetime(), updated_at: converted_datetime()} 
-             })
+                prisma.user.update({ where: {user_id}, data: {phone_number, country_code, updated_at: converted_datetime()}, include: {company: true}}),
+                
+                prisma.company.update({
+                    where: {company_id: user_company.company_id}, 
+                    data: {company_name, company_address, company_phone, organization_size, created_at: converted_datetime(), updated_at: converted_datetime()} 
+                })
             ])
             
             
@@ -182,7 +183,6 @@ export const signup_generate_user_otp = async (req: CustomRequest, res: Response
 export const generate_user_otp = async (req: CustomRequest, res: Response, next: NextFunction) => {
     const {email} = req.body
     try {
-        
         const otp = generate_otp()
 
         if (!email){ return res.status(422).json({err: 'Email is required'}) }
@@ -201,25 +201,6 @@ export const generate_user_otp = async (req: CustomRequest, res: Response, next:
         return res.status(500).json({ err: 'Internal server error.' });
     }
 
-}
-
-
-export const get_user_info = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    try {
-
-        const user_id = req.user.user_id
-
-        const user = await prisma.user.findUnique({where: {user_id}})
-
-        if (!user){
-            return res.status(404).json({err: 'User not found'})
-        }
-
-        return res.status(200).json({msg: 'User data', user: user})
-    } catch (err: any) {
-        console.log('Errror getting user data ', err);
-        return res.status(500).json({err: 'Error getting user data ', error: err})
-    }    
 }
 
 export const resend_otp = async(req: CustomRequest, res: Response, next: NextFunction)=>{
@@ -246,9 +227,7 @@ export const verify_user_otp = async (req: CustomRequest, res: Response, next: N
     const {otp, email} = req.body
     try {
 
-        
         const user = await prisma.user.update({ where: {email}, data: {is_verified: true, updated_at: converted_datetime()}})
-
 
         const auth_id = await redis_auth_store(user, 60 * 60 * 23);
 
@@ -265,13 +244,13 @@ export const verify_user_otp = async (req: CustomRequest, res: Response, next: N
 
 }
 
-
 export const reset_password = async(req: CustomRequest, res: Response, next: NextFunction)=>{
+    const {new_password} = req.body
     try {
 
         const auth_id = req.headers['x-id-key'];
 
-        const encrypted_password = await bcrypt.hash(req.body.new_password, salt_round);
+        const encrypted_password = await bcrypt.hash(new_password, salt_round);
 
         const updated_user = await prisma.user.update({
             where: { user_id: req.user.user_id },
@@ -289,68 +268,6 @@ export const reset_password = async(req: CustomRequest, res: Response, next: Nex
     }
 }
 
-export const logged_in_admin = async(req: CustomRequest, res: Response, next: NextFunction)=>{
-    try {
-        const user_id = req.user.user_id;
-
-        const {page_number,  notification_page_number} = req.params
-
-        const [user,  leads, sales, installations, project, number_of_activities, activities, service_tickets, payments, accounting, number_of_notification , task_notification ] = await Promise.all([
-
-            prisma.user.findUnique({ where: {user_id}, include: {company: true}}),
-
-            prisma.lead.findMany({}),
-            prisma.sale.findMany({}),
-            prisma.installation.findMany({}),
-            prisma.project.findMany({}),
-
-            prisma.activity.count({}),
-            prisma.activity.findMany({ skip: (Math.abs(Number(page_number)) - 1) * 10, take: 10, include: {user: true}, orderBy: { created_at: 'desc'  } }),
-
-            prisma.service_Ticket.findMany({}),
-            prisma.payment.findMany({}),
-            prisma.accounting.findMany({}),
-
-            prisma.task_Notification.count({}),
-            prisma.task_Notification.findMany({ skip: (Math.abs(Number(notification_page_number)) - 1) * 10, include: {user: true}, take: 10, orderBy: { created_at: 'desc'  } }),
-
-            
-        ])
-
-        const number_of_activity_pages = (number_of_activities <= 10) ? 1 : Math.ceil(number_of_activities / 10)
-
-        const number_of_notification_pages = (number_of_notification <= 10) ? 1 : Math.ceil(number_of_notification / 10)
-
-        
-        return res.status(200).json({
-            msg: 'User data fetched successfully ', 
-            logged_in_admin: user,
-            total_number_of_leads: leads.length,
-            total_number_of_sales: sales.length,
-            total_number_of_installations: installations.length,
-            total_number_of_projects: project.length,
-            total_number_of_recent_activities: number_of_activities,
-            total_number_of_recent_activities_pages: number_of_activity_pages,
-            activities: activities,
-            new_lead: leads,
-
-            pending_sales: sales.filter((data:any)=> data.sale_status == 'PENDING'),
-            ongoing_installations: installations.filter((data:any) => data.installation_status == 'IN_PROGRESS'),
-            open_service_tickets: service_tickets.filter((data:any) => data.status == 'OPEN' ),
-            pending_payments: payments.filter((data:any) => data.payment_status == 'PENDING'),
-            accounting: accounting,
-
-            total_number_of_task_notification: number_of_activities,
-            total_number_of_task_notifications_pages: number_of_notification_pages,
-            task_notification: task_notification,
-
-        })
-
-    } catch (err:any) {
-        console.log('Error occured while fetching logged in user data ', err);
-        return res.status(500).json({err: 'Error occured while fetching logged in user data ', error: err})
-    }
-}
 
 
 
