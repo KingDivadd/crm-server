@@ -71,7 +71,7 @@ export const add_project_installs = async(req: CustomRequest, res: Response)=>{
     
                         message: `Install for project ${project_exist.project_ind} for job ${project_exist.job.job_ind} has been added by ${user.first_name} ${user.last_name}`,
     
-                        view_by_admin: true,
+                        view_by_admin: true, notification_type: 'project',
     
                         notification_source_id: req.user.user_id,
     
@@ -147,7 +147,7 @@ export const edit_project_installs = async(req: CustomRequest, res: Response)=>{
 
                     message: `Project Install of Id ${install_exist.install_ind} for Project ${install_exist.project.project_ind} updated successfully by ${user.first_name} ${user.last_name}.`,
 
-                    view_by_admin: true,
+                    view_by_admin: true, notification_type: 'project',
 
                     notification_source_id: req.user.user_id, notification_to_id: null,
 
@@ -220,7 +220,7 @@ export const add_install_material = async(req: CustomRequest, res: Response)=>{
 
                     message: `Project Materials for Project ${install_exist.project.project_ind} added successfully by ${user.first_name} ${user.last_name}.`,
 
-                    view_by_admin: true,
+                    view_by_admin: true, notification_type: "project",
 
                     notification_source_id: req.user.user_id, notification_to_id: null,
 
@@ -297,7 +297,7 @@ export const edit_install_material = async(req: CustomRequest, res: Response)=>{
 
                     message: `Project Materials for Project ${install_exist.project.project_ind} updated successfully by ${user.first_name} ${user.last_name}.`,
 
-                    view_by_admin: true,
+                    view_by_admin: true, notification_type: 'project',
 
                     notification_source_id: req.user.user_id, notification_to_id: null,
 
