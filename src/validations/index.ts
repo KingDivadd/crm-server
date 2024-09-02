@@ -414,6 +414,7 @@ export const edit_project_validation = async (req: Request, res: Response, next:
             job_receipt_upload: Joi.array().optional(),
             regimented_photo_upload: Joi.array().optional(),
             project_details_and_instruction: Joi.array().optional(),
+
         })
 
         const { error: validation_error } = schema.validate(req.body)
@@ -426,6 +427,88 @@ export const edit_project_validation = async (req: Request, res: Response, next:
         return next()
     } catch (err:any) {
         return res.status(422).json({err: 'Error occured while validating project update data ', error: err})
+    }
+}
+
+export const project_invoice_validation = async (req: Request, res: Response, next: NextFunction)=>{
+    try {
+        const schema = Joi.object({
+            invoice_upload: Joi.array().items(Joi.string().optional()).optional(),
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (err:any) {
+        return res.status(422).json({err: 'Error occured while validating project invoice upload data data ', error: err})
+    }
+}
+
+export const project_photo_validation = async (req: Request, res: Response, next: NextFunction)=>{
+    try {
+        const schema = Joi.object({
+            photo_upload: Joi.array().items(Joi.string().optional()).optional(),
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (err:any) {
+        return res.status(422).json({err: 'Error occured while validating project photo upload data data ', error: err})
+    }
+}
+
+export const project_job_description_validation = async (req: Request, res: Response, next: NextFunction)=>{
+    try {
+        const schema = Joi.object({
+            job_description: Joi.string().allow('').optional()
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (err:any) {
+        return res.status(422).json({err: 'Error occured while validating project photo upload data data ', error: err})
+    }
+}
+
+export const project_inspection_validation = async (req: Request, res: Response, next: NextFunction)=>{
+    try {
+        const schema = Joi.object({
+            inspection_date: Joi.number().required(),
+            inspection_document: Joi.array().items(Joi.string().optional()).optional(),
+            inspection_status: Joi.string().trim().valid('n_a','pass', 'fail').required()
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (err:any) {
+        return res.status(422).json({err: 'Error occured while validating project inspection data ', error: err})
     }
 }
 

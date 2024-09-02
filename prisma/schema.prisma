@@ -65,6 +65,7 @@ model User {
 
   redLine_assigner                        RedLine[]        @relation("redLine_assigner_ref")
   redLine_assignee                        RedLine[]        @relation("redLine_assignee_ref")
+  employee                                Payroll[]        @relation("employee_ref")
 
 
   created_at                              Decimal
@@ -167,6 +168,7 @@ model Job {
   project                                 Project[]
   accounting                              Accounting[]
   user_tracking                           User_Tracking[]
+  payroll                                 Payroll[]
 
   deleted                                 Boolean         @default(false)
 
@@ -204,9 +206,12 @@ model Project {
   paperwork_upload                        Json?            @default("[]")
   photo_upload                            Json?            @default("[]")
   engineering_drawing_upload              Json?            @default("[]")
+  invoice_upload                          Json?            @default("[]")
 
   inspection_document                     Json?            @default("[]")
-  inspection_date                         Decimal?           
+  inspection_date                         Decimal?     
+  inspection_status                       InspStatus       @default(n_a)      
+  job_description                         String?          
 
   user_tracking                           User_Tracking[]
   notifications                           Notification[]
@@ -449,10 +454,11 @@ model Accounting {
   job                                     Job             @relation(fields: [job_id], references: [job_id])
   job_id                                  String
 
-  project_profit_loss                     Float?
-  cost_per_project                        Float?
+  project_profit                          Float?
+  project_loss                            Float?
   profit_margin                           Float?
-  loss                                    Float?
+
+  cost_per_project                        Float?
   bills_invoices                          Json?            @default("[]")
   payroll                                 Json?            @default("[]")
 
@@ -461,6 +467,23 @@ model Accounting {
   install_calender_link                   String?
   electrical_calender_link                String?
 
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
+model Payroll {
+  payroll_id                              String           @id @default(uuid()) @unique
+  payroll_ind                             String
+
+  employee                                User             @relation("employee_ref",fields: [employee_id], references: [user_id])
+  employee_id                             String
+
+  job                                     Job              @relation(fields: [job_id], references: [job_id])
+  job_id                                  String
+
+  amount                                  Float
+  payment_date                            Decimal
 
   created_at                              Decimal
   updated_at                              Decimal

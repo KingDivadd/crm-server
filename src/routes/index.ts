@@ -1,7 +1,8 @@
 import express from 'express'
 
 
-import {main_permit_dashboard} from "../controllers/permit_porter"
+import {main_electrical_dashboard, project_invoice_upload, project_photo_upload} from "../controllers/electrical_porter"
+import {create_new_redline, edit_project_inspection, edit_redline, main_permit_dashboard} from "../controllers/permit_porter"
 import {close_rfi, create_rfi, edit_rfi, main_engineering_dashboard } from '../controllers/engineering_porter'
 import { main_designer_dashboard,} from '../controllers/designer_porter'
 import { create_new_invoice, edit_invoice, main_accounting_dashboard} from '../controllers/accounting_porter'
@@ -10,9 +11,9 @@ import { add_install_material, add_project_installs, edit_install_material, edit
 import {all_notification, get_settings_information, update_notification, update_settings_information} from "../controllers/general"
 import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
 import { admin_complete_signup, admin_signup, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, verify_user_otp } from '../controllers/authentication'
-import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation } from '../validations'
+import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation, project_inspection_validation, project_photo_validation, project_invoice_validation, project_job_description_validation } from '../validations'
 import { add_new_user, admin_main_dashboard, all_designers, all_paginated_users, delete_user, edit_user_data } from '../controllers/admin_porter'
-import { add_new_lead, all_lead, all_paginated_jobs, all_paginated_leads, all_paginated_projects, create_new_job, delete_job, delete_lead, edit_job, edit_lead, edit_project, main_sales_dashboard } from '../controllers/sales_porter'
+import { add_new_lead, all_lead, all_paginated_jobs, all_paginated_leads, all_paginated_projects, all_paginated_service_ticket, assign_service_ticket, create_new_job, delete_job, delete_lead, edit_job, edit_lead, edit_project, main_sales_dashboard } from '../controllers/sales_porter'
 
 
 
@@ -81,6 +82,10 @@ router.route('/delete-job/:job_id').delete(verify_auth_id, delete_job)
 
 router.route('/edit-project/:project_id').patch(verify_auth_id, edit_project_validation, edit_project )
 
+router.route('/all-paginated-service-ticket/:page_number').get(verify_auth_id, all_paginated_service_ticket )
+
+router.route('/service-ticket-assignment/:ticket_id').patch(verify_auth_id, assign_service_ticket )
+
 
 // Designer / Operation Porter
 
@@ -135,9 +140,26 @@ router.route('/close-rfi/:rfi_id').patch(verify_auth_id, close_rfi )
 
 router.route('/permit-dashboard').get(verify_auth_id, main_permit_dashboard )
 
-router.route('/create-red-line').post(verify_auth_id, red_line_validation )
+router.route('/create-redline').post(verify_auth_id, red_line_validation, create_new_redline )
+
+router.route('/edit-redline/:redline_id').patch(verify_auth_id, red_line_validation, edit_redline )
+
+router.route('/inspect-project/:project_id').patch(verify_auth_id, project_inspection_validation, edit_project_inspection )
+
+
 
 // Electrical Porter
+
+router.route('/electrical-dashboard').get(verify_auth_id, main_electrical_dashboard )
+
+// router.route('/all-paginated-service-ticket/:page_number').get(verify_auth_id, all_paginated_service_ticket )
+
+router.route('/project-invoice-upload/:project_id').patch(verify_auth_id, project_invoice_validation, project_invoice_upload )
+
+router.route('/project-photo-upload/:project_id').patch(verify_auth_id, project_photo_validation, project_photo_upload )
+
+router.route('/project-job-description/:project_id').patch(verify_auth_id, project_job_description_validation, project_photo_upload )
+
 
 
 // HR/Accounting Porter

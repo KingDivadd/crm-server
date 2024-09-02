@@ -858,3 +858,117 @@ export const edit_project = async(req: CustomRequest, res: Response)=>{
         
     }
 }
+
+
+export const assign_service_ticket = async(req: CustomRequest, res: Response)=>{
+    const {ticket_assignee_id} = req.body
+    try {
+        
+        const user =  req.user
+
+        const {ticket_id} = req.params
+
+        if (!ticket_assignee_id) { return res.status(422).json({err: 'Service ticket assignee id is required '}) }
+
+        const [ticket_exist, user_exist, last_tracking, last_notification] = await Promise.all([
+            prisma.serviceTicket.findFirst({ where: {ticket_id}, select: {ticket_ind: true}}),
+            prisma.user.findFirst({where: {user_id: ticket_assignee_id}, select: {user_id: true, user_ind: true}}),
+            prisma.user_Tracking.findFirst({ orderBy: {created_at: 'desc'}, select: {tracking_ind: true} }),
+            prisma.notification.findFirst({ orderBy: {created_at: 'desc'}, select: {notification_ind: true} }),
+        ])
+
+        if (!user_exist) {return res.status(404).json({err: 'User not found, check user id and try again'})}
+
+        if (!ticket_exist) {return res.status(404).json({err: 'Service Ticket not found, check ticket id and try again'})}
+
+        const last_notification_number = last_notification ? parseInt(last_notification.notification_ind.slice(2)) : 0;
+        const new_notification_number = last_notification_number + 1;
+        const new_notification_ind = `NT${new_notification_number.toString().padStart(4, '0')}`;
+
+        const last_tracking_number = last_tracking ? parseInt(last_tracking.tracking_ind.slice(2)) : 0;
+        const new_tracking_number = last_tracking_number + 1;
+        const new_tracking_ind = `TR${new_tracking_number.toString().padStart(4, '0')}`;
+
+
+        const update_ticket = await prisma.serviceTicket.update({
+            where: {ticket_id},
+            data: {
+                ticket_assignee_id: ticket_assignee_id,
+                ticket_assigner_id: req.user.user_id,
+                updated_at: converted_datetime()
+            },
+            include: {
+                ticket_creator: {select: {user_id: true, first_name: true, last_name: true, user_role: true}},
+                ticket_assignee: {select: {user_id: true, first_name: true, last_name: true, user_role: true}},
+                ticket_assigner: {select: {user_id: true, first_name: true, last_name: true, user_role: true}},
+            }
+        })
+
+        await Promise.all([
+            prisma.user_Tracking.create({
+                data: {
+                    tracking_ind: new_tracking_ind,
+                    user: {connect: {user_id: req.user.user_id}},
+                    action_type: 'ticket_modification',
+                    action_details: {
+                        ticket_id: update_ticket.ticket_id, time: update_ticket.updated_at, modification_type: 'update'
+                    },
+                    created_at: converted_datetime(), updated_at: converted_datetime(),
+                }
+            }),
+            
+            prisma.notification.create({
+                data: {
+                    notification_ind: new_notification_ind, subject: 'Service Ticket Assigned', ticket_id: update_ticket.ticket_id,
+
+                    message: `Service Ticket with Id ${update_ticket.ticket_ind} created by ${update_ticket.ticket_creator.first_name} ${update_ticket.ticket_creator.first_name} has been assiged to ${update_ticket.ticket_assignee?.first_name} ${update_ticket.ticket_assignee?.last_name} (${update_ticket.ticket_assignee?.user_role}).`,
+
+                    view_by_admin: true,
+                    notification_type: 'job',
+
+                    notification_source_id: req.user.user_id, notification_to_id: update_ticket.ticket_assignee_id,
+
+                    created_at: converted_datetime(), updated_at: converted_datetime(),
+                }
+            })
+        ])
+
+        return res.status(201).json({
+            msg: 'Ticket Assigned successfully successfully',
+            ticket: update_ticket
+        })
+
+    } catch (err:any) {
+        console.log('Error occured while creating service ticket ', err);
+        return res.status(500).json({err:'Error occured while creating service ticket ', error:err});
+    }
+}
+
+export const all_paginated_service_ticket = async(req: CustomRequest, res: Response)=>{
+    try {
+
+        const {page_number} = req.params
+
+        const [number_of_tickets, tickets ] = await Promise.all([
+
+            prisma.serviceTicket.count({}),
+
+            prisma.serviceTicket.findMany({
+                include: {
+                    project: true
+                },
+
+                skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
+            }),
+
+        ])
+        
+        const number_of_ticket_pages = (number_of_tickets <= 15) ? 1 : Math.ceil(number_of_tickets / 15)
+
+        return res.status(200).json({ total_number_of_tickets: number_of_tickets, total_number_of_pages: number_of_ticket_pages, tickets })
+
+    } catch (err:any) {
+        console.log('Error occured while fetching all service ticket',err);
+        return res.status(500).json({err:'Error occured while fetching all service ticket',error:err});
+    }
+}
