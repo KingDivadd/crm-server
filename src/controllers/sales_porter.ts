@@ -57,10 +57,10 @@ export const all_paginated_leads = async(req: CustomRequest, res: Response)=>{
             prisma.lead.findMany({
                 include: {
                     lead_adder: {
-                        select: {first_name: true, last_name: true, email: true, avatar: true, user_role: true, phone_number: true}
+                        select: {first_name: true, last_name: true, email: true, avatar: true, user_role: true, phone_number: true, user_id: true}
                     },
                     lead_designer: {
-                        select: {first_name: true, last_name: true, email: true, avatar: true, user_role: true, phone_number: true}
+                        select: {first_name: true, last_name: true, email: true, avatar: true, user_role: true, phone_number: true, user_id: true}
                     }
                 },
 
@@ -83,7 +83,7 @@ export const all_lead = async(req: CustomRequest, res: Response)=>{
         const sold_leads = await prisma.lead.findMany({
             where: {disposition: 'sold'},
             select: {
-                lead_ind: true, lead_designer: {select: {user_ind: true, first_name: true, last_name: true}}
+                lead_ind: true, lead_designer: {select: {user_id:true, user_ind: true, first_name: true, last_name: true}}
             }
         })
 
@@ -99,7 +99,7 @@ export const all_lead = async(req: CustomRequest, res: Response)=>{
 }
 
 export const add_new_lead = async(req: CustomRequest, res: Response)=>{
-    const {customer_first_name, customer_last_name, customer_email, customer_phone, } = req.body
+    const {customer_first_name, customer_last_name, customer_email, customer_phone } = req.body
     try {
 
         const logged_in_user = req.user

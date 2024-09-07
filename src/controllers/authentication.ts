@@ -8,6 +8,18 @@ import { CustomRequest } from '../helpers/interface'
 import converted_datetime from '../helpers/date_time_elemets'
 const bcrypt = require('bcrypt')
 
+export const app_user_exist = async(req: Request, res:Response)=>{
+    try {
+
+        const users = await prisma.user.count({})
+
+        return res.status(200).json({number_of_user: users})
+        
+    } catch (err:any) {
+        console.log('Error getting app users ', err);
+        return res.status(500).json({err:'Error getting app users ', error:err});
+    }
+}
 
 export const admin_signup = async(req:Request, res: Response, next: NextFunction)=>{
     const {last_name, first_name, email, password, phone_number} = req.body
@@ -92,6 +104,25 @@ export const user_login = async(req: Request, res: Response, next: NextFunction)
     } catch (err:any) {
         console.log('Error during login ',err)
         return res.status(500).json({err: `Error occured during login `, error: err})
+    }
+}
+
+export const logged_in_user = async(req: CustomRequest, res: Response)=>{
+    try {
+        const user = req.user
+
+        const notification = await prisma.notification.findMany({
+            orderBy: {created_at: 'desc'}
+        })
+
+        return res.status(200).json({
+            msg: 'Fetched User', 
+            user: user,
+            notification: notification
+        })
+    } catch (err:any) {
+        console.log('error getting user data ',err);
+        return res.status(500).json({err:'error getting user data ',error:err})
     }
 }
 

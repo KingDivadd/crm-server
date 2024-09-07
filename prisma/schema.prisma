@@ -46,6 +46,12 @@ model User {
   company                                 Company?         @relation(fields: [company_id], references: [company_id])
   company_id                              String?
 
+  added_by                                User?            @relation("user_added_by", fields: [added_by_id], references: [user_id])
+  added_by_id                             String?
+
+  added_users                             User[]           @relation("user_added_by")
+
+
   lead_adder                              Lead[]           @relation("lead_adder_ref")
 
   lead_designer                           Lead[]           @relation("lead_designer_ref")

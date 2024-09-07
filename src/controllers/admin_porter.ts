@@ -75,6 +75,7 @@ export const all_paginated_users = async(req: CustomRequest, res: Response)=>{
             }),
             prisma.user.findMany({
                 where: {user_id: {not: user_id}, deleted: false},
+                include: {added_by: {select: {user_id: true, user_ind: true, first_name: true, last_name: true}}},
                 skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
             }),
 
@@ -99,7 +100,7 @@ export const all_designers = async(req: CustomRequest, res: Response)=>{
 
         return res.status(200).json({
             msg: 'All designers',
-            designers: users
+            staffs: users
         })
 
     } catch (err:any) {
@@ -110,9 +111,11 @@ export const all_designers = async(req: CustomRequest, res: Response)=>{
 
 export const add_new_user = async(req: CustomRequest, res: Response)=>{
     try {
-        const user_role = req.user.user_role
+        const user_role = req.user.user_role; const user_id = req.user.user_id; const company_id = req.user.company_id;
 
-        if (user_role !== 'admin' || user_role !== 'super_admin') { 
+        console.log('user role ', user_role)
+
+        if (!user_role.includes('admin')) { 
             return res.status(401).json({err: 'Not authorized perform operation`'})
         }
 
@@ -130,9 +133,11 @@ export const add_new_user = async(req: CustomRequest, res: Response)=>{
 
         req.body.password = encrypted_password
         req.body.user_ind = new_user_ind
+        req.body.company_id = company_id
 
         const new_user = await prisma.user.create({
             data: {
+                added_by_id: user_id,
                 ...req.body,
 
                 created_at: converted_datetime(),
@@ -175,11 +180,12 @@ export const add_new_user = async(req: CustomRequest, res: Response)=>{
 export const edit_user_data = async(req: CustomRequest, res: Response)=>{
     const {first_name, last_name, phone_number, country_code, user_role, password} = req.body
     try {
-        const user_rol = req.user.user_role
+        const user_rol = req.user.user_role; const logged_in_user_id = req.user.user_id; const company_id = req.user.company_id;
 
         const {user_id} = req.params
 
-        if (user_rol !== 'admin' || user_rol !== 'super_admin') {
+        if (!user_rol.includes('admin')) {
+            console.log(' here ')
             return res.status(401).json({er: 'Not authorized to perform operation'})
         }
 
@@ -201,6 +207,7 @@ export const edit_user_data = async(req: CustomRequest, res: Response)=>{
         }
 
         update.updated_at = converted_datetime()
+        update.company_id = company_id;
 
         const [update_user_date, last_tracking] = await Promise.all([
             prisma.user.update({
@@ -243,7 +250,7 @@ export const edit_user_data = async(req: CustomRequest, res: Response)=>{
 export const delete_user = async(req: CustomRequest, res: Response)=>{
     try {
         const user_role = req.user.user_role
-        if (user_role !== 'super_admin' || user_role !== 'admin') {
+        if (!user_role.includes('admin')) {
             return res.status(401).json({err: 'Not authorized to perform operation'})
         }
         

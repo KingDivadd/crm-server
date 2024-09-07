@@ -10,7 +10,7 @@ import {all_paginated_invoice, all_paginated_payments, create_service_ticket, cu
 import { add_install_material, add_project_installs, edit_install_material, edit_project_installs, main_installer_dashboard} from "../controllers/installer_porter"
 import {all_notification, get_settings_information, update_notification, update_settings_information} from "../controllers/general"
 import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
-import { admin_complete_signup, admin_signup, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, verify_user_otp } from '../controllers/authentication'
+import { admin_complete_signup, admin_signup, app_user_exist, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, logged_in_user, verify_user_otp } from '../controllers/authentication'
 import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation, project_inspection_validation, project_photo_validation, project_invoice_validation, project_job_description_validation } from '../validations'
 import { add_new_user, admin_main_dashboard, all_designers, all_paginated_users, delete_user, edit_user_data } from '../controllers/admin_porter'
 import { add_new_lead, all_lead, all_paginated_jobs, all_paginated_leads, all_paginated_projects, all_paginated_service_ticket, assign_service_ticket, create_new_job, delete_job, delete_lead, edit_job, edit_lead, edit_project, main_sales_dashboard } from '../controllers/sales_porter'
@@ -21,21 +21,25 @@ const router = express.Router()
 
 // Authentication
 
+router.route('/count-user').get(app_user_exist)
+
 router.route('/admin-signup').post(admin_signup_validation, email_exist, admin_signup)
 
-router.route('/admin-complete-signup').patch(verify_auth_id, admin_setup_validation, admin_complete_signup)
+router.route('/complete-signup').patch(verify_auth_id, admin_setup_validation, admin_complete_signup, signup_generate_user_otp)
 
 router.route('/login').post(login_validation, user_login)
 
+router.route('/logged-in-user').get(verify_auth_id, logged_in_user)
+
 router.route('/signup-generate-user-otp').get(verify_auth_id, signup_generate_user_otp)
 
-router.route('/generate-user-otp').get(generate_user_otp)
+router.route('/generate-user-otp').post(generate_user_otp)
 
 router.route('/resend-otp').get(verify_auth_id, resend_otp)
 
 router.route('/verify-user-otp').post(verify_otp, verify_user_otp)
 
-router.route('/reset-password').post(verify_auth_id, reset_password_validation, reset_password )
+router.route('/reset-password').patch(verify_auth_id, reset_password_validation, reset_password )
 
 // Admin Porter
 
@@ -43,11 +47,11 @@ router.route('/admin-dashboard').get(verify_auth_id, admin_main_dashboard)
 
 router.route('/all-paginated-users/:page_number').get(verify_auth_id, all_paginated_users)
 
-router.route('/all-designers').post(verify_auth_id, all_designers)
+router.route('/all-designers').get(verify_auth_id, all_designers)
 
-router.route('/create-user').post(verify_auth_id, create_user_validation, add_new_user)
+router.route('/create-user').post(verify_auth_id, create_user_validation, email_exist, add_new_user)
 
-router.route('/update-user-data/:user_id').post(verify_auth_id, admin_edit_user_validation , edit_user_data)
+router.route('/update-user-data/:user_id').patch(verify_auth_id, admin_edit_user_validation, email_exist, edit_user_data)
 
 router.route('/delete-user/:user_id').delete(verify_auth_id, delete_user)
 
@@ -62,9 +66,9 @@ router.route('/all-paginated-leads/:page_number').get(verify_auth_id, all_pagina
 
 router.route('/sold-lead').get(verify_auth_id, all_lead)
 
-router.route('/new-lead').post(verify_auth_id, lead_validation, add_new_lead )
+router.route('/new-lead').post(verify_auth_id, lead_validation, email_exist, add_new_lead )
 
-router.route('/edit-lead/:lead_id').patch(verify_auth_id, lead_validation, edit_lead )
+router.route('/edit-lead/:lead_id').patch(verify_auth_id, lead_validation, email_exist, edit_lead )
 
 router.route('/delete-lead/:lead_id').delete(verify_auth_id, delete_lead )
 
