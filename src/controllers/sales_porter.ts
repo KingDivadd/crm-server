@@ -4,9 +4,27 @@ import { CustomRequest } from '../helpers/interface'
 import converted_datetime from '../helpers/date_time_elemets'
 import { send_lead_sold_email } from '../helpers/email'
 import { salt_round } from '../helpers/constants'
-import generate_otp from '../helpers/generate_otp'
 const bcrypt = require('bcrypt')
 
+
+export const all_sales_user = async(req: CustomRequest, res: Response)=>{
+    try {
+        
+        const user = await prisma.user.findMany({
+            where: {user_role: 'sales'},
+            orderBy: {created_at: 'desc'}
+        })
+
+        return res.status(200).json({
+            msg: 'All Sales Personnels',
+            staffs: user
+        })
+
+    } catch (err:any) {
+        console.log('Error fetching all sales users ', err);
+        return res.status(500).json({err:'Error fetching all sales users ', error:err});
+    }
+}
 
 export const main_sales_dashboard = async(req: CustomRequest, res: Response)=>{
     try {
@@ -17,7 +35,7 @@ export const main_sales_dashboard = async(req: CustomRequest, res: Response)=>{
             prisma.job.findMany({ orderBy: {created_at: 'desc'} }),
             prisma.lead.findMany({ take: 15, orderBy: {created_at: 'desc'}  }),
             prisma.serviceTicket.findMany({ 
-                where: {ticket_assignee_id: req.body.user_id},
+                where: {ticket_assignee_id: req.user.user_id},
                 include: {
                     ticket_assignee: {
                         select: {first_name: true, last_name: true, email: true, user_role: true, phone_number: true, avatar: true, }
@@ -46,15 +64,17 @@ export const main_sales_dashboard = async(req: CustomRequest, res: Response)=>{
 
 export const all_paginated_leads = async(req: CustomRequest, res: Response)=>{
     try {
-        const user_id = req.user.user_id
+        const user_id = req.user.user_id; const user_role = req.user.user_role;
 
         const {page_number} = req.params
 
+        const lead_display_condition = (user_role == 'designer') ? {lead_designer_id: user_id} : {}
         const [number_of_leads, leads ] = await Promise.all([
 
-            prisma.lead.count({}),
+            prisma.lead.count({ where: lead_display_condition }),
 
             prisma.lead.findMany({
+                where: lead_display_condition,
                 include: {
                     lead_adder: {
                         select: {first_name: true, last_name: true, email: true, avatar: true, user_role: true, phone_number: true, user_id: true}
@@ -81,10 +101,17 @@ export const all_paginated_leads = async(req: CustomRequest, res: Response)=>{
 export const all_lead = async(req: CustomRequest, res: Response)=>{
     try {
         const sold_leads = await prisma.lead.findMany({
-            where: {disposition: 'sold'},
+            where: {
+                disposition: 'sold',
+                job: {
+                    none: {}
+                }
+            },
             select: {
+                customer_first_name: true, customer_last_name: true, lead_id: true,
                 lead_ind: true, lead_designer: {select: {user_id:true, user_ind: true, first_name: true, last_name: true}}
-            }
+            },
+            orderBy: {created_at: 'desc'}
         })
 
         return res.status(200).json({
@@ -238,15 +265,19 @@ export const edit_lead = async(req: CustomRequest, res: Response)=>{
     try {
         
         const {lead_id} = req.params
+        const entered_email = customer_email
 
-        const [lead_exist, last_user, last_tracking, last_notification] = await Promise.all([
-            prisma.lead.findFirst({where: {lead_id}}),
+        const [lead_exist,email_exist, last_user, last_tracking, last_notification] = await Promise.all([
+            prisma.lead.findFirst({where: {lead_id}, select: {customer_email: true, lead_id: true, disposition: true} }),
+            prisma.user.findUnique({where: {email: entered_email}, select: {email: true}}),
             prisma.user.findFirst({orderBy: {created_at: 'desc'}, select: {user_ind: true}}),
             prisma.user_Tracking.findFirst({orderBy: {created_at: 'desc'}, select: {tracking_ind: true}}),
             prisma.notification.findFirst({orderBy: {created_at: 'desc'}, select: {notification_ind: true}})
         ])
 
         if (!lead_exist) { return res.status(404).json({err: 'Lead not found, check lead id provided'}) }
+
+        if (email_exist && (lead_exist.customer_email !== email_exist.email)) { return res.status(409).json({err: 'Email already taken.'})}
 
         const last_user_number = last_user ? parseInt(last_user.user_ind.slice(2)) : 0;
         const new_user_number = last_user_number + 1;
@@ -259,6 +290,11 @@ export const edit_lead = async(req: CustomRequest, res: Response)=>{
         const last_tracking_number = last_tracking ? parseInt(last_tracking.tracking_ind.slice(2)) : 0;
         const new_tracking_number = last_tracking_number + 1;
         const new_tracking_ind = `TR${new_tracking_number.toString().padStart(4, '0')}`;
+
+
+        if (lead_exist.disposition == 'sold' && req.body.disposition == "not_sold") {
+            return res.status(400).json({err: 'Lead already sold, and therefore cannot be unsold.'})
+        }
 
         const update_lead = await prisma.lead.update({
             where: {lead_id},
@@ -274,14 +310,14 @@ export const edit_lead = async(req: CustomRequest, res: Response)=>{
             }
         })
 
-        if (update_lead && update_lead.disposition == 'sold') {
+        if (update_lead && lead_exist.disposition == "not_sold" && update_lead.disposition == 'sold') {
 
             const encrypted_password = await bcrypt.hash('password', salt_round);
 
             const [new_customer, new_tracking, new_notification] = await Promise.all([
                 prisma.user.create({
                     data: {
-                        user_ind: new_user_ind,
+                        user_ind: new_user_ind, added_by_id: req.user.user_id,
                         first_name: customer_first_name, last_name: customer_last_name, email: customer_email, phone_number: customer_phone,
                         password: encrypted_password, user_role: 'customer', is_verified: true,
                         created_at: converted_datetime(), updated_at: converted_datetime()
@@ -321,6 +357,41 @@ export const edit_lead = async(req: CustomRequest, res: Response)=>{
                 msg: 'Lead updated and sold',
                 lead: update_lead
             })
+        }else if (update_lead && lead_exist.disposition == "sold" && update_lead.disposition == 'sold') {
+
+            const [new_tracking, new_notification] = await Promise.all([
+
+                prisma.user_Tracking.create({
+                    data: {
+                        tracking_ind: new_tracking_ind,
+                        user: {connect: {user_id: req.user.user_id}},
+                        action_type: 'lead_modification',
+                        action_details: {
+                            lead_id: update_lead.lead_id, time: update_lead.updated_at, modification_type: 'update'
+                        },
+                        created_at: converted_datetime(), updated_at: converted_datetime(),
+                    }
+                }),
+                
+                prisma.notification.create({
+                    data: {
+                        notification_ind: new_notification_ind, subject: 'Lead Updated and Sold', lead_id: update_lead.lead_id,
+    
+                        message: `Lead with Id ${update_lead.lead_ind} created by ${update_lead.lead_adder.first_name} ${update_lead.lead_adder.first_name} and assigned to designer ${update_lead.lead_designer.first_name} ${update_lead.lead_designer.last_name} has been sold.`,
+    
+                        view_by_admin: true, notification_type: 'lead',
+    
+                        notification_source_id: req.user.user_id, notification_to_id: update_lead.lead_designer_id,
+    
+                        created_at: converted_datetime(), updated_at: converted_datetime(),
+                    }
+                })
+            ])
+
+            return res.status(200).json({
+                msg: 'Lead updated and sold',
+                lead: update_lead
+            })
         }
 
         const new_tracking = await prisma.user_Tracking.create({
@@ -346,6 +417,91 @@ export const edit_lead = async(req: CustomRequest, res: Response)=>{
         return res.status(500).json({err:'Error occured while editing lead datails ', error: err})
     }
 }
+
+export const edit_lead_contract_document = async(req: CustomRequest, res: Response)=>{
+    const {desired_structure, contract_document } = req.body
+    try {
+        
+        const {lead_id} = req.params
+
+        const [lead_exist, last_tracking, last_notification] = await Promise.all([
+            prisma.lead.findFirst({where: {lead_id}}),
+            prisma.user_Tracking.findFirst({orderBy: {created_at: 'desc'}, select: {tracking_ind: true}}),
+            prisma.notification.findFirst({orderBy: {created_at: 'desc'}, select: {notification_ind: true}})
+        ])
+
+        if (!lead_exist) { return res.status(404).json({err: 'Lead not found, check lead id provided'}) }
+
+        const last_notification_number = last_notification ? parseInt(last_notification.notification_ind.slice(2)) : 0;
+        const new_notification_number = last_notification_number + 1;
+        const new_notification_ind = `NT${new_notification_number.toString().padStart(4, '0')}`;
+
+        const last_tracking_number = last_tracking ? parseInt(last_tracking.tracking_ind.slice(2)) : 0;
+        const new_tracking_number = last_tracking_number + 1;
+        const new_tracking_ind = `TR${new_tracking_number.toString().padStart(4, '0')}`;
+
+
+        const update_lead = await prisma.lead.update({
+            where: {lead_id},
+            data: {
+
+                contract_document, desired_structure,
+
+                updated_at: converted_datetime()
+            },
+            include: {
+                lead_adder: {select: {first_name: true, last_name: true}},
+                lead_designer: {select: {first_name: true, last_name: true}}
+            }
+        })
+
+
+        const encrypted_password = await bcrypt.hash('password', salt_round);
+
+        const [new_tracking, new_notification] = await Promise.all([
+            
+            prisma.user_Tracking.create({
+                data: {
+                    tracking_ind: new_tracking_ind,
+                    user: {connect: {user_id: req.user.user_id}},
+                    action_type: 'lead_modification',
+                    action_details: {
+                        lead_id: update_lead.lead_id, time: update_lead.updated_at, modification_type: 'update'
+                    },
+                    created_at: converted_datetime(), updated_at: converted_datetime(),
+                }
+            }),
+            
+            prisma.notification.create({
+                data: {
+                    notification_ind: new_notification_ind, subject: 'Contract Information Updated ', lead_id: update_lead.lead_id,
+
+                    message: `Contract information for Lead ${update_lead.lead_ind} created by ${update_lead.lead_adder.first_name} ${update_lead.lead_adder.first_name} and assigned to designer ${update_lead.lead_designer.first_name} ${update_lead.lead_designer.last_name} has been updated.`,
+
+                    view_by_admin: true, notification_type: 'lead',
+
+                    notification_source_id: req.user.user_id, notification_to_id: update_lead.lead_designer_id,
+
+                    created_at: converted_datetime(), updated_at: converted_datetime(),
+                }
+            })
+        ])
+
+        
+
+        return res.status(200).json({
+            msg: 'Lead Contract document updated ',
+            lead: update_lead
+        })
+
+
+    } catch (err) {
+        console.log('Error occured while editing lead datails ', err)
+        return res.status(500).json({err:'Error occured while editing lead datails ', error: err})
+    }
+}
+
+
 
 export const delete_lead = async(req: CustomRequest, res: Response)=>{
     try {
@@ -445,7 +601,15 @@ export const all_paginated_jobs = async(req: CustomRequest, res: Response)=>{
                     job_adder: {
                         select: {first_name: true, last_name: true, email: true, avatar: true, user_role: true, phone_number: true}
                     },
-                    lead: true
+                    lead: {
+                        select: {
+                            lead_id: true, lead_ind: true,customer_first_name: true, customer_last_name: true,
+                            lead_designer: {
+                            select: {
+                                first_name: true, last_name: true
+                            }
+                        }}
+                    }
                 },
 
                 skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
@@ -474,7 +638,19 @@ export const all_paginated_projects = async(req: CustomRequest, res: Response)=>
             prisma.project.count({}),
 
             prisma.project.findMany({
-                include: {job: true},
+                include: {job: {
+                    include: {
+                        job_adder: {
+                            select: {last_name: true, first_name: true, user_ind: true}
+                        },
+                        lead: {
+                            select: {
+                                lead_ind: true, customer_first_name: true, customer_last_name: true, 
+                                customer_address: true, customer_email: true, customer_phone: true,
+                            }
+                        }
+                    }
+                }},
 
                 skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
             }),
@@ -601,7 +777,8 @@ export const edit_job = async(req: CustomRequest, res: Response)=>{
 
     try {
 
-        const user = req.body.user
+        const user = req.user
+
         
         const {job_id} = req.params
 
@@ -970,5 +1147,40 @@ export const all_paginated_service_ticket = async(req: CustomRequest, res: Respo
     } catch (err:any) {
         console.log('Error occured while fetching all service ticket',err);
         return res.status(500).json({err:'Error occured while fetching all service ticket',error:err});
+    }
+}
+
+export const all_paginated_staff_pipeline = async(req: CustomRequest, res: Response)=>{
+    try {
+        
+        const {page_number} = req.params
+
+        const [number_of_leads, leads ] = await Promise.all([
+
+            prisma.lead.count({}),
+
+            prisma.lead.findMany({
+                
+                include: {
+                    job: {
+                        include: {
+                            project: true
+                        }
+                    },
+                    
+                },
+
+                skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
+            }),
+
+        ])
+
+        const number_of_lead_pages = (number_of_leads <= 15) ? 1 : Math.ceil(number_of_leads / 15)
+
+        return res.status(200).json({ total_number_of_leads: number_of_leads, total_number_of_pages: number_of_lead_pages, leads })
+
+    } catch (err:any) {
+        console.log('Error fetching pipeline ', err);
+        return res.status(500).json({err:'Error fetching pipeline ', error:err});
     }
 }

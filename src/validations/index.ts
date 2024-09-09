@@ -318,8 +318,8 @@ export const lead_validation = async (req: Request, res: Response, next: NextFun
 
             gate_code: Joi.string().trim().allow('').optional(),
             appointment_date: Joi.string().trim().required(),
-            desired_structrue: Joi.string().trim().allow('').optional(),
-            contract_document: Joi.array().optional(),
+            desired_structure: Joi.string().trim().allow('').optional(),
+            contract_document: Joi.array().items(Joi.string().trim().optional()).optional(),
 
         })
 
@@ -336,6 +336,29 @@ export const lead_validation = async (req: Request, res: Response, next: NextFun
     }
 }
 
+export const lead_contract_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+
+            desired_structure: Joi.string().trim().allow('').required(),
+            contract_document: Joi.array().items(Joi.string().trim().required()).required(),
+
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating lead creation input ',error })
+    }
+}
+
+
 export const job_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const schema = Joi.object({
@@ -347,24 +370,24 @@ export const job_validation = async (req: Request, res: Response, next: NextFunc
             contract_date: Joi.number().required(),
 
             // Permits
-            hoa_permit_status: Joi.string().trim().required(),
+            hoa_permit_status: Joi.string().trim().valid('not_required', 'required', 'pending', 'submitted', 'approved').required(),
             hoa_permit_submit_date: Joi.number().optional(),
             hoa_permit_approval_date: Joi.number().optional(),
-            hoa_permit_number: Joi.number().optional(),
+            hoa_permit_number: Joi.string().trim().allow('').optional(),
             hoa_permit_cost: Joi.number().optional(),
             hoa_permit_document:Joi.array().items(Joi.string().trim().optional()).optional(),
             
-            engineering_permit_status: Joi.string().trim().required(),
+            engineering_permit_status: Joi.string().trim().valid('not_required', 'required', 'pending', 'submitted', 'approved').required(),
             engineering_permit_submit_date: Joi.number().optional(),
             engineering_permit_approval_date: Joi.number().optional(),
-            engineering_permit_number: Joi.number().optional(),
+            engineering_permit_number: Joi.string().trim().allow('').optional(),
             engineering_permit_cost: Joi.number().optional(),
             engineering_permit_document:Joi.array().items(Joi.string().trim().optional()).optional(),
             
-            general_permit_status: Joi.string().trim().required(),
+            general_permit_status: Joi.string().trim().valid('not_required', 'required', 'pending', 'submitted', 'approved').required(),
             general_permit_submit_date: Joi.number().optional(),
             general_permit_approval_date: Joi.number().optional(),
-            general_permit_number: Joi.number().optional(),
+            general_permit_number: Joi.string().trim().allow('').optional(),
             general_permit_cost: Joi.number().optional(),
             general_permit_document:Joi.array().items(Joi.string().trim().optional()).optional(),
             

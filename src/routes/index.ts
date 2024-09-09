@@ -11,9 +11,9 @@ import { add_install_material, add_project_installs, edit_install_material, edit
 import {all_notification, get_settings_information, update_notification, update_settings_information} from "../controllers/general"
 import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
 import { admin_complete_signup, admin_signup, app_user_exist, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, logged_in_user, verify_user_otp } from '../controllers/authentication'
-import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation, project_inspection_validation, project_photo_validation, project_invoice_validation, project_job_description_validation } from '../validations'
+import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation, project_inspection_validation, project_photo_validation, project_invoice_validation, project_job_description_validation, lead_contract_validation,  } from '../validations'
 import { add_new_user, admin_main_dashboard, all_designers, all_paginated_users, delete_user, edit_user_data } from '../controllers/admin_porter'
-import { add_new_lead, all_lead, all_paginated_jobs, all_paginated_leads, all_paginated_projects, all_paginated_service_ticket, assign_service_ticket, create_new_job, delete_job, delete_lead, edit_job, edit_lead, edit_project, main_sales_dashboard } from '../controllers/sales_porter'
+import { add_new_lead, all_lead, all_paginated_jobs, all_paginated_leads, all_paginated_projects, all_paginated_service_ticket, all_paginated_staff_pipeline, all_sales_user, assign_service_ticket, create_new_job, delete_job, delete_lead, edit_job, edit_lead, edit_lead_contract_document, edit_project, main_sales_dashboard } from '../controllers/sales_porter'
 
 
 
@@ -60,7 +60,11 @@ router.route('/delete-user/:user_id').delete(verify_auth_id, delete_user)
 
 router.route('/sales-dashboard').get(verify_auth_id, main_sales_dashboard)
 
+router.route('/all-sales-user').get(verify_auth_id, all_sales_user)
+
 // Lead
+
+router.route('/all-lead').get(verify_auth_id, all_lead)
 
 router.route('/all-paginated-leads/:page_number').get(verify_auth_id, all_paginated_leads)
 
@@ -68,7 +72,7 @@ router.route('/sold-lead').get(verify_auth_id, all_lead)
 
 router.route('/new-lead').post(verify_auth_id, lead_validation, email_exist, add_new_lead )
 
-router.route('/edit-lead/:lead_id').patch(verify_auth_id, lead_validation, email_exist, edit_lead )
+router.route('/edit-lead/:lead_id').patch(verify_auth_id, lead_validation, edit_lead )
 
 router.route('/delete-lead/:lead_id').delete(verify_auth_id, delete_lead )
 
@@ -90,10 +94,14 @@ router.route('/all-paginated-service-ticket/:page_number').get(verify_auth_id, a
 
 router.route('/service-ticket-assignment/:ticket_id').patch(verify_auth_id, assign_service_ticket )
 
+router.route('/all-paginated-staff-pipeline/:page_number').get(verify_auth_id, all_paginated_staff_pipeline)
+
 
 // Designer / Operation Porter
 
 router.route('/designer-dashboard').get(verify_auth_id, main_designer_dashboard)
+
+router.route("/upload-lead-contract-document/:lead_id").patch(verify_auth_id, lead_contract_validation , edit_lead_contract_document)
 
 // router.route('/edit-job/:job_id').patch(verify_auth_id, job_validation, edit_job)
 

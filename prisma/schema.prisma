@@ -112,10 +112,10 @@ model Lead {
   customer_address                        String?
   customer_phone                          String?
   customer_email                          String?  // required when dispostion is sold
-
   gate_code                               String?
   appointment_date                        Decimal
   disposition                             Disposition     @default(not_sold)
+  
   desired_structure                       String?
   contract_document                       Json?            @default("[]")
 
@@ -148,21 +148,21 @@ model Job {
   contract_date                           Decimal
   email                                   String            @unique
 
-  hoa_permit                              PermitStatus
+  hoa_permit_status                       PermitStatus
   hoa_permit_submit_date                  Decimal?
   hoa_permit_approval_date                Decimal?
   hoa_permit_number                       String?
   hoa_permit_cost                         Float?
   hoa_permit_document                     Json?            @default("[]")
 
-  engineering_permit                      PermitStatus
+  engineering_permit_status               PermitStatus
   engineering_permit_submit_date          Decimal?
   engineering_permit_approval_date        Decimal?
   engineering_permit_number               String?
   engineering_permit_cost                 Float?
   engineering_permit_document             Json?            @default("[]")
 
-  general_permit                          PermitStatus
+  general_permit_status                   PermitStatus
   general_permit_submit_date              Decimal?
   general_permit_approval_date            Decimal?
   general_permit_number                   String?
@@ -185,6 +185,7 @@ model Job {
 enum PermitStatus {
   not_required
   required
+  pending
   submitted
   approved
 }

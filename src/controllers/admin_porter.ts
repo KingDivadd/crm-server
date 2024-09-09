@@ -183,11 +183,19 @@ export const edit_user_data = async(req: CustomRequest, res: Response)=>{
         const user_rol = req.user.user_role; const logged_in_user_id = req.user.user_id; const company_id = req.user.company_id;
 
         const {user_id} = req.params
-
+        
         if (!user_rol.includes('admin')) {
             console.log(' here ')
             return res.status(401).json({er: 'Not authorized to perform operation'})
         }
+
+        const user_exist = await prisma.user.findUnique({where: {user_id}})
+
+        if (!user_exist) { return res.status(404).json({err: 'selected user not found'}) }
+
+        if (user_exist.user_role == 'customer') { return res.status(400).json({err: `Not allowed to change customer's information`}) }
+
+        if (user_rol !== 'super_admin' || user_exist.user_role == 'admin') { return res.status(401).json({err: 'Unathorized assignment'})}
 
         const update:any = {}
 
