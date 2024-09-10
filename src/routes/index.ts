@@ -12,7 +12,7 @@ import {all_notification, get_settings_information, update_notification, update_
 import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
 import { admin_complete_signup, admin_signup, app_user_exist, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, logged_in_user, verify_user_otp } from '../controllers/authentication'
 import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation, project_inspection_validation, project_photo_validation, project_invoice_validation, project_job_description_validation, lead_contract_validation,  } from '../validations'
-import { add_new_user, admin_main_dashboard, all_designers, all_paginated_users, delete_user, edit_user_data } from '../controllers/admin_porter'
+import { add_new_user, admin_main_dashboard, all_lead_assigners, all_paginated_users, delete_user, edit_user_data } from '../controllers/admin_porter'
 import { add_new_lead, all_lead, all_paginated_jobs, all_paginated_leads, all_paginated_projects, all_paginated_service_ticket, all_paginated_staff_pipeline, all_sales_user, assign_service_ticket, create_new_job, delete_job, delete_lead, edit_job, edit_lead, edit_lead_contract_document, edit_project, main_sales_dashboard } from '../controllers/sales_porter'
 
 
@@ -47,7 +47,7 @@ router.route('/admin-dashboard').get(verify_auth_id, admin_main_dashboard)
 
 router.route('/all-paginated-users/:page_number').get(verify_auth_id, all_paginated_users)
 
-router.route('/all-designers').get(verify_auth_id, all_designers)
+router.route('/all-lead-staffs').get(verify_auth_id, all_lead_assigners)
 
 router.route('/create-user').post(verify_auth_id, create_user_validation, email_exist, add_new_user)
 

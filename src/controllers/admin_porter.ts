@@ -91,11 +91,11 @@ export const all_paginated_users = async(req: CustomRequest, res: Response)=>{
     }
 }
 
-export const all_designers = async(req: CustomRequest, res: Response)=>{
+export const all_lead_assigners = async(req: CustomRequest, res: Response)=>{
     try {
         
         const users = await prisma.user.findMany({
-            where: {user_role: 'designer'}
+            where: {user_role: 'sales'}
         })
 
         return res.status(200).json({
@@ -104,8 +104,8 @@ export const all_designers = async(req: CustomRequest, res: Response)=>{
         })
 
     } catch (err:any) {
-        console.log('Error occured while fetching all designers ', err);
-        return res.status(500).json({err:'Error occured while fetching all designers ', error: err});
+        console.log('Error occured while fetching all sales personnels ', err);
+        return res.status(500).json({err:'Error occured while fetching all sales personnels ', error: err});
     }
 }
 
