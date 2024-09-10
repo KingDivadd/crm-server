@@ -2,7 +2,7 @@ import express from 'express'
 
 
 import {main_electrical_dashboard, project_invoice_upload, project_photo_upload} from "../controllers/electrical_porter"
-import {create_new_redline, edit_project_inspection, edit_redline, main_permit_dashboard} from "../controllers/permit_porter"
+import {all_paginated_job_permits, create_new_redline, edit_project_inspection, edit_redline, main_permit_dashboard} from "../controllers/permit_porter"
 import {close_rfi, create_rfi, edit_rfi, main_engineering_dashboard } from '../controllers/engineering_porter'
 import { main_designer_dashboard,} from '../controllers/designer_porter'
 import { create_new_invoice, edit_invoice, main_accounting_dashboard} from '../controllers/accounting_porter'
@@ -151,6 +151,8 @@ router.route('/close-rfi/:rfi_id').patch(verify_auth_id, close_rfi )
 // Permit Porter
 
 router.route('/permit-dashboard').get(verify_auth_id, main_permit_dashboard )
+
+router.route('/all-paginated-job-permits/:page_number').get(verify_auth_id, all_paginated_job_permits)
 
 router.route('/create-redline').post(verify_auth_id, red_line_validation, create_new_redline )
 

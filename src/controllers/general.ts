@@ -132,9 +132,13 @@ export const all_notification = async(req: CustomRequest, res: Response, next: N
                     ]
                 },
                 include: {
-                    notification_source: {select: {first_name: true, last_name: true, user_ind: true,}}, 
+                    notification_source: {select: {first_name: true, last_name: true, user_ind: true, user_role: true}}, 
                     notification_to: {select: {first_name: true, last_name: true, user_ind: true,}}, 
-                
+                    job: true,
+                    lead: true,
+                    project: true,
+                    ticket: true,
+                    rfi: true
                 },
                 skip: (Math.abs(Number(page_number)) - 1) * 15,
                 take: 15,

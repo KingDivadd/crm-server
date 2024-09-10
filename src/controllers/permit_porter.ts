@@ -15,6 +15,35 @@ export const main_permit_dashboard = async(req: CustomRequest, res: Response)=>{
 }
 
 
+
+export const all_paginated_job_permits = async(req: CustomRequest, res: Response)=>{
+    try {
+        const user_id = req.user.user_id
+
+        const {page_number} = req.params
+
+        const [number_of_jobs, jobs ] = await Promise.all([
+
+            prisma.job.count({ }),
+
+            prisma.job.findMany({
+                include: {project: true},
+                skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc' } 
+            }),
+
+        ])
+        
+        const number_of_jobs_pages = (number_of_jobs <= 15) ? 1 : Math.ceil(number_of_jobs / 15)
+
+        return res.status(200).json({ total_number_of_jobs: number_of_jobs, total_number_of_pages: number_of_jobs_pages, jobs })
+
+    } catch (err:any) {
+        console.log('Error occured fetching all job / project permits ', err);
+        return res.status(500).json({err:'Error occured fetching all job / project permits', error:err});
+    }
+}
+
+
 export const create_new_redline = async(req: CustomRequest, res: Response)=>{
 
     try {
@@ -300,3 +329,4 @@ export const edit_project_inspection = async(req: CustomRequest, res: Response)=
         return res.status(500).json({err:'Error editing project', error:err});
     }
 }
+

@@ -476,7 +476,7 @@ export const edit_lead_contract_document = async(req: CustomRequest, res: Respon
                 data: {
                     notification_ind: new_notification_ind, subject: 'Contract Information Updated ', lead_id: update_lead.lead_id,
 
-                    message: `Contract information for Lead ${update_lead.lead_ind} created by ${update_lead.lead_adder.first_name} ${update_lead.lead_adder.first_name} and assigned to designer ${update_lead.lead_designer.first_name} ${update_lead.lead_designer.last_name} has been updated.`,
+                    message: `Contract information for Lead ${update_lead.lead_ind} updated by ${update_lead.lead_adder.first_name} ${update_lead.lead_adder.first_name} and assigned to designer ${update_lead.lead_designer.first_name} ${update_lead.lead_designer.last_name} has been updated.`,
 
                     view_by_admin: true, notification_type: 'lead',
 
@@ -1162,6 +1162,12 @@ export const all_paginated_staff_pipeline = async(req: CustomRequest, res: Respo
             prisma.lead.findMany({
                 
                 include: {
+                    lead_adder: {
+                        select: {user_ind: true, first_name: true, last_name: true, user_role: true, }
+                    },
+                    lead_designer: {
+                        select: {user_ind: true, first_name: true, last_name: true, user_role: true, }
+                    },
                     job: {
                         include: {
                             project: true
