@@ -7,7 +7,7 @@ import {close_rfi, create_rfi, edit_rfi, main_engineering_dashboard } from '../c
 import { main_designer_dashboard,} from '../controllers/designer_porter'
 import { create_new_invoice, edit_invoice, main_accounting_dashboard} from '../controllers/accounting_porter'
 import {all_paginated_invoice, all_paginated_payments, create_service_ticket, customer_main_dashbaord, edit_service_ticket, make_new_payment} from '../controllers/customer_porter'
-import { add_install_material, add_project_installs, edit_install_material, edit_project_installs, main_installer_dashboard} from "../controllers/installer_porter"
+import { add_install_material, add_project_installs, all_paginated_installable_projects, edit_install_material, edit_project_installs, main_installer_dashboard} from "../controllers/installer_porter"
 import {all_notification, get_settings_information, update_notification, update_settings_information} from "../controllers/general"
 import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
 import { admin_complete_signup, admin_signup, app_user_exist, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, logged_in_user, verify_user_otp } from '../controllers/authentication'
@@ -110,7 +110,7 @@ router.route("/upload-lead-contract-document/:lead_id").patch(verify_auth_id, le
 
 router.route('/installer-dashboard').get(verify_auth_id, main_installer_dashboard )
 
-// router.route('/all-paginated-jobs/:page_number').get(verify_auth_id, all_paginated_jobs)
+router.route('/all-paginated-installable-projects/:page_number').get(verify_auth_id, all_paginated_installable_projects)
 
 // router.route('/all-paginated-project/:page_number').get(verify_auth_id, all_paginated_projects )
 

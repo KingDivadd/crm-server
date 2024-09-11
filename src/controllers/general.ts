@@ -12,7 +12,7 @@ export const get_settings_information = async(req: CustomRequest, res: Response,
         const user = req.user        
 
         // if admin
-        if (user.user_role == 'admin') {
+        if (user.user_role == 'admin' || user.user_role == "super_admin") {
             
             const [user_info, company_info] = await Promise.all([
 
@@ -23,7 +23,11 @@ export const get_settings_information = async(req: CustomRequest, res: Response,
             ])
             
             
-            return res.status(200).json({msg: 'Fetched Admin Settings information ', user: user_info, company: company_info})
+            return res.status(200).json({
+                msg: 'Fetched Admin Settings information ', 
+                user: user_info, 
+                company: company_info
+            })
         }else{
             const user_info = await prisma.user.findUnique({ where: {user_id: user.user_id} })
 

@@ -316,3 +316,44 @@ export const edit_install_material = async(req: CustomRequest, res: Response)=>{
         return res.status(500).json({err:'Error occured while updating intall materials ', error: err});
     }
 }
+
+export const all_paginated_installable_projects = async(req: CustomRequest, res: Response)=>{
+    try {
+        const user_id = req.user.user_id
+
+        const {page_number} = req.params
+
+        const [number_of_projects, projects ] = await Promise.all([
+
+            prisma.project.count({
+                
+            }),
+
+            prisma.project.findMany({
+                include: {
+                    install: true,
+                    job: {
+                        select: {
+                            job_ind: true, job_id:true, job_number: true,
+                            lead: {
+                                select: {customer_first_name: true, customer_last_name: true, desired_structure: true,  }
+                            }
+                        }
+                    }
+                },
+
+                skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
+            }),
+
+        ])
+        
+        const number_of_project_pages = (number_of_projects <= 15) ? 1 : Math.ceil(number_of_projects / 15)
+
+        return res.status(200).json({ total_number_of_projects: number_of_projects, total_number_of_pages: number_of_project_pages, projects })
+
+    } catch (err:any) {
+        console.log('Error occured while fetching all installable project ',err);
+        return res.status(500).json({err:'Error occured while fetching all installable project ',error:err});
+    }
+}
+
