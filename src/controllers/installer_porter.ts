@@ -23,13 +23,14 @@ export const add_project_installs = async(req: CustomRequest, res: Response)=>{
 
         const {project_id} = req.params
 
-        const [project_exist, last_tracking, last_notification] = await Promise.all([
+        const [project_exist, last_tracking, last_notification, last_install] = await Promise.all([
             prisma.project.findFirst({ 
                 where: {project_id}, 
                 select: {project_id: true, project_ind: true, job: {select: {job_ind: true}} } 
             }),
             prisma.user_Tracking.findFirst({orderBy: {created_at: 'desc'}, select: {tracking_ind: true}}),
             prisma.notification.findFirst({orderBy: {created_at: 'desc'}, select: {notification_ind: true}}),
+            prisma.install.findFirst({orderBy: {created_at: 'desc'}, select: {install_ind: true}}),
         ])
 
         if (!project_exist) { return res.status(404).json({err: 'Project not found, check project id and try again'}) }
@@ -42,8 +43,13 @@ export const add_project_installs = async(req: CustomRequest, res: Response)=>{
         const new_tracking_number = last_tracking_number + 1;
         const new_tracking_ind = `TR${new_tracking_number.toString().padStart(4, '0')}`;
 
+        const last_install_number = last_install ? parseInt(last_install.install_ind.slice(2)) : 0;
+        const new_install_number = last_install_number + 1;
+        const new_install_ind = `TR${new_install_number.toString().padStart(4, '0')}`;
+
         const add_install = await prisma.install.create({
             data: {
+                install_ind: new_install_ind,
                 project_id: project_id,
                 ...req.body,
                 created_at: converted_datetime(), updated_at: converted_datetime()
