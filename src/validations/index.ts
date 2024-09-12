@@ -399,6 +399,7 @@ export const job_validation = async (req: Request, res: Response, next: NextFunc
             cover_color: Joi.string().trim().allow('').optional(),
             trim_color: Joi.string().trim().allow('').optional(),
             description: Joi.string().trim().allow('').optional(),
+            
 
             paperwork_upload: Joi.array().optional(),
             photo_upload: Joi.array().optional(),
@@ -559,10 +560,10 @@ export const install_validation = async (req: Request, res: Response, next: Next
             electrical_crew: Joi.string().trim().allow('').optional(),
             electrical_bill_sheet: Joi.string().trim().allow('').optional(),
 
+            project_sign_off: Joi.string().trim().valid("pending", "in_progress", "completed", "closed").required(),
+
             inspection_date: Joi.number().optional(),
             inspection_status: Joi.string().trim().valid('n_a','pass', 'fail').required(),
-
-            project_sign_off: Joi.string().trim().valid('pending', 'in_progress', 'completed', 'closed', )
 
         })
 
