@@ -560,7 +560,9 @@ export const install_validation = async (req: Request, res: Response, next: Next
             electrical_bill_sheet: Joi.string().trim().allow('').optional(),
 
             inspection_date: Joi.number().optional(),
-            inspection_status: Joi.string().trim().valid('n_a','pass', 'fail').required()
+            inspection_status: Joi.string().trim().valid('n_a','pass', 'fail').required(),
+
+            project_sign_off: Joi.string().trim().valid('pending', 'in_progress', 'completed', 'closed', )
 
         })
 
