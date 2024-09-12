@@ -576,7 +576,7 @@ export const install_validation = async (req: Request, res: Response, next: Next
 
         return next()
     } catch (err:any) {
-        return res.status(422).json({err: 'Error occured while validating project install data ', error: err})
+        return res.status(422).json({err: 'Error occured while validating project install data. ', error: err})
     }
 }
 
