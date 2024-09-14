@@ -16,7 +16,11 @@ export const admin_main_dashboard = async(req: CustomRequest, res: Response)=>{
 
         const [total_lead, jobs, total_installations, recent_lead, recent_job, recent_invoice, recent_payment ] = await Promise.all([
             prisma.lead.count(),
-            prisma.job.findMany({select: {job_id: true, contract_amount: true}}),
+            prisma.job.findMany({
+                select: {
+                    job_id: true, contract_amount: true
+                }
+            }),
             prisma.install.count(),
             prisma.lead.findMany({
                 take: 15, include: {
@@ -27,8 +31,21 @@ export const admin_main_dashboard = async(req: CustomRequest, res: Response)=>{
             }),
             prisma.job.findMany({
                 take: 15, include: {
-                    lead: {select: {lead_id: true, lead_ind: true, customer_last_name: true, customer_first_name: true}},
-                    job_adder: {select: {first_name: true, last_name: true, user_id: true, user_role: true, }},
+                    project: {
+                        take: 1
+                    },
+                    job_adder: {
+                        select: {first_name: true, last_name: true, email: true, avatar: true, user_role: true, phone_number: true}
+                    },
+                    lead: {
+                        select: {
+                            lead_id: true, lead_ind: true,customer_first_name: true, customer_last_name: true,
+                            lead_designer: {
+                            select: {
+                                first_name: true, last_name: true
+                            }
+                        }}
+                    }
                 },
                 orderBy: {created_at: 'desc'}
             }),
@@ -195,7 +212,7 @@ export const edit_user_data = async(req: CustomRequest, res: Response)=>{
 
         if (user_exist.user_role == 'customer') { return res.status(400).json({err: `Not allowed to change customer's information`}) }
 
-        if (user_rol !== 'super_admin' || user_exist.user_role == 'admin') { return res.status(401).json({err: 'Unathorized assignment'})}
+        if (user_rol !== 'super_admin' && user_exist.user_role !== user_role) { return res.status(401).json({err: 'Unathorized assignment'})}
 
         const update:any = {}
 

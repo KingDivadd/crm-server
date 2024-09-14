@@ -517,7 +517,7 @@ export const delete_lead = async(req: CustomRequest, res: Response)=>{
                 select: {
                     lead_adder: {select: {first_name: true, last_name: true, avatar: true, user_role: true}},
                     lead_designer: {select: {first_name: true, last_name: true, avatar: true, user_role: true, }},
-                    lead_id: true, lead_ind: true, lead_designer_id: true
+                    lead_id: true, lead_ind: true, lead_designer_id: true, disposition: true, customer_email: true
                 }
             }),
             prisma.user_Tracking.findFirst({ orderBy: {created_at: 'desc'}, select: {tracking_ind: true} }),
@@ -570,7 +570,19 @@ export const delete_lead = async(req: CustomRequest, res: Response)=>{
                 }
             })
 
-        ]) 
+        ])
+
+        if (lead_exist.disposition == 'sold' && lead_exist.customer_email) {
+            await prisma.user.update({
+                where: {
+                    email: lead_exist?.customer_email                },
+                data: {
+                    deleted: true, updated_at: converted_datetime()
+                }
+            })
+        }
+
+
 
         return res.status(200).json({
             msg: 'Lead deleted succesfully'
