@@ -514,29 +514,6 @@ export const project_job_description_validation = async (req: Request, res: Resp
     }
 }
 
-export const project_inspection_validation = async (req: Request, res: Response, next: NextFunction)=>{
-    try {
-        const schema = Joi.object({
-            inspection_date: Joi.number().required(),
-            inspection_document: Joi.array().items(Joi.string().optional()).optional(),
-            inspection_status: Joi.string().trim().valid('n_a','pass', 'fail').required()
-
-        })
-
-        const { error: validation_error } = schema.validate(req.body)
-
-        if (validation_error) {
-            const error_message = validation_error.message.replace(/"/g, '');
-            return res.status(400).json({ err: error_message });
-        }
-
-        return next()
-    } catch (err:any) {
-        return res.status(422).json({err: 'Error occured while validating project inspection data ', error: err})
-    }
-}
-
-
 export const install_validation = async (req: Request, res: Response, next: NextFunction)=>{
     try {
         const schema = Joi.object({
@@ -562,9 +539,6 @@ export const install_validation = async (req: Request, res: Response, next: Next
 
             project_sign_off: Joi.string().trim().valid("pending", "in_progress", "completed", "closed").required(),
 
-            inspection_date: Joi.number().optional(),
-            inspection_status: Joi.string().trim().valid('n_a','pass', 'fail').required(),
-
         })
 
         const { error: validation_error } = schema.validate(req.body)
@@ -581,6 +555,49 @@ export const install_validation = async (req: Request, res: Response, next: Next
 }
 
 
+
+export const inspection_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            
+            footing_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
+            footing_inspection_comments: Joi.string().trim().optional(),
+            footing_inspection_date: Joi.number().optional(),
+            
+            set_post_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
+            set_post_inspection_comments: Joi.string().trim().optional(),
+            set_post_inspection_date: Joi.number().optional(),
+
+            demo_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
+            demo_inspection_comments: Joi.string().trim().optional(),
+            demo_inspection_date: Joi.number().optional(),
+
+            install_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
+            install_inspection_comments: Joi.string().trim().optional(),
+            install_inspection_date: Joi.number().optional(),
+
+            electrical_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
+            electrical_inspection_comments: Joi.string().trim().optional(),
+            electrical_inspection_date: Joi.number().optional(),
+
+            final_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
+            final_inspection_comments: Joi.string().trim().optional(),
+            final_inspection_date: Joi.number().optional(),
+            
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while validating inspection data ',error })
+    }
+}
 
 export const payment_validation = async (req: Request, res: Response, next: NextFunction) => {
     try {

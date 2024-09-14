@@ -72,6 +72,7 @@ model User {
   redLine_assigner                        RedLine[]        @relation("redLine_assigner_ref")
   redLine_assignee                        RedLine[]        @relation("redLine_assignee_ref")
   employee                                Payroll[]        @relation("employee_ref")
+  inspector                               Inspection[]        @relation("inspector_ref")
 
 
   created_at                              Decimal
@@ -236,7 +237,7 @@ model Install {
   install_id                              String           @id @default(uuid()) @unique
   install_ind                             String
 
-  project                                 Project             @relation(fields: [project_id], references: [project_id])
+  project                                 Project          @relation(fields: [project_id], references: [project_id])
   project_id                              String
 
   footing_date                            Float?
@@ -259,8 +260,7 @@ model Install {
   electrical_crew                         String?
   electrical_bill_sheet                   String?
 
-  inspection_date                         Float?
-  inspection_status                       InspStatus      @default(n_a)
+  inspections                             Inspection[]
 
   project_sign_off                        SignOffStatus   @default(pending)
 
@@ -278,11 +278,62 @@ enum SignOffStatus {
   closed
 }
 
+
+model Inspection {
+  inspection_id                           String           @id @default(uuid()) @unique
+  inspection_ind                          String
+
+  install                                 Install          @relation(fields: [install_id], references: [install_id])
+  install_id                              String
+
+  inspector                               User             @relation("inspector_ref", fields: [inspector_id], references: [user_id])
+  inspector_id                            String
+
+  inspector_box                           Json?           @default("[]")
+
+  // Inspection results for each phase of the project
+
+  footing_inspection_status               InspStatus       @default(pending)
+  footing_inspection_comments             String?
+  footing_inspection_date                 Decimal?
+
+  set_post_inspection_status              InspStatus       @default(pending)
+  set_post_inspection_comments            String?
+  set_post_inspection_date                Decimal?
+
+  demo_inspection_status                  InspStatus       @default(pending)
+  demo_inspection_comments                String?
+  demo_inspection_date                    Decimal?
+
+  install_inspection_status               InspStatus       @default(pending)
+  install_inspection_comments             String?
+  install_inspection_date                 Decimal?
+
+  electrical_inspection_status            InspStatus       @default(pending)
+  electrical_inspection_comments          String?
+  electrical_inspection_date              Decimal?
+
+  // Final project inspection and sign-off
+
+  final_inspection_status                 InspStatus       @default(pending)
+  final_inspection_comments               String?
+  final_inspection_date                   Decimal?
+
+
+  notification                            Notification[]
+  user_tracking                           User_Tracking[]
+
+  created_at                              Decimal
+  updated_at                              Decimal
+}
+
 enum InspStatus {
-  n_a
   pass
   fail
+  pending
+  n_a
 }
+
 
 model Material {
   material_id                             String           @id @default(uuid()) @unique
@@ -425,6 +476,9 @@ model Notification {
   redLine                                 RedLine?         @relation(fields: [redLine_id], references: [redLine_id])
   redLine_id                              String?
 
+  inspection                              Inspection?    @relation(fields: [inspection_id], references: [inspection_id])
+  inspection_id                           String?
+
   subject                                 String
   message                                 String
   notification_type                       NotificationType
@@ -433,6 +487,7 @@ model Notification {
   read_by                                 Json?            @default("[]")
 
   view_by_admin                           Boolean          @default(false)
+  viewable_role                           Json?            @default("[]")
 
   notification_source                     User?            @relation("notification_source_ref", fields: [notification_source_id], references: [user_id])
   notification_source_id                  String?
@@ -452,6 +507,7 @@ enum NotificationType {
   rfi
   redLine
   service_ticket
+  inspection
 }
 
 model Accounting {
@@ -518,6 +574,9 @@ model User_Tracking {
   redLine                                 RedLine?         @relation(fields: [redLine_id], references: [redLine_id])
   redLine_id                              String?
 
+  inspection                              Inspection?         @relation(fields: [inspection_id], references: [inspection_id])
+  inspection_id                           String?
+
   created_at                              Decimal
   updated_at                              Decimal
 }
@@ -534,6 +593,7 @@ enum ActionType {
   redLine_modification
   photo_download
   service_ticket
+  inspection_modification
 }
 
 
