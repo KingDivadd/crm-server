@@ -2,12 +2,12 @@ import express from 'express'
 
 
 import {main_electrical_dashboard, project_invoice_upload, project_photo_upload} from "../controllers/electrical_porter"
-import {add_inspection, all_paginated_inspection, all_paginated_job_permits, create_new_redline, edit_inspection, edit_redline, main_permit_dashboard} from "../controllers/permit_porter"
+import {add_inspection, all_installs, all_paginated_inspection, all_paginated_job_permits, create_new_redline, edit_inspection, edit_redline, main_permit_dashboard} from "../controllers/permit_porter"
 import {close_rfi, create_rfi, edit_rfi, main_engineering_dashboard } from '../controllers/engineering_porter'
 import { main_designer_dashboard,} from '../controllers/designer_porter'
 import { create_new_invoice, edit_invoice, main_accounting_dashboard} from '../controllers/accounting_porter'
 import {all_paginated_invoice, all_paginated_payments, create_service_ticket, customer_main_dashbaord, edit_service_ticket, make_new_payment} from '../controllers/customer_porter'
-import { add_install_material, add_project_installs, all_paginated_installable_projects, edit_install_material, edit_project_installs, main_installer_dashboard} from "../controllers/installer_porter"
+import { add_install_material, add_project_installs, all_paginated_installs, all_projects, edit_install_material, edit_project_installs, main_installer_dashboard} from "../controllers/installer_porter"
 import {all_notification, get_settings_information, update_notification, update_settings_information} from "../controllers/general"
 import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
 import { admin_complete_signup, admin_signup, app_user_exist, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, logged_in_user, verify_user_otp } from '../controllers/authentication'
@@ -110,9 +110,11 @@ router.route("/upload-lead-contract-document/:lead_id").patch(verify_auth_id, le
 
 router.route('/installer-dashboard').get(verify_auth_id, main_installer_dashboard )
 
-router.route('/all-paginated-installable-projects/:page_number').get(verify_auth_id, all_paginated_installable_projects)
+router.route('/all-paginated-installs/:page_number').get(verify_auth_id, all_paginated_installs)
 
 // router.route('/all-paginated-project/:page_number').get(verify_auth_id, all_paginated_projects )
+
+router.route('/all-projects').get(verify_auth_id, all_projects)
 
 router.route('/add-project-install/:project_id').post(verify_auth_id, install_validation, add_project_installs)
 
@@ -159,6 +161,8 @@ router.route('/create-redline').post(verify_auth_id, red_line_validation, create
 router.route('/edit-redline/:redline_id').patch(verify_auth_id, red_line_validation, edit_redline )
 
 router.route('/all-paginated-inspection/:page_number').get(verify_auth_id, all_paginated_inspection)
+
+router.route('/all-installs').get(verify_auth_id, all_installs)
 
 router.route('/add-inspection/:install_id').patch(verify_auth_id, inspection_validation, add_inspection )
 

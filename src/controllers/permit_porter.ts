@@ -284,6 +284,22 @@ export const all_paginated_inspection = async(req: CustomRequest, res: Response)
     }
 }
 
+export const all_installs = async(req: CustomRequest, res: Response)=>{
+    try {
+        const installs = await prisma.install.findMany({
+            orderBy: {created_at: 'desc'}
+        })
+
+        return res.status(200).json({
+            msg: 'All installs',
+            installs: installs
+        })
+    } catch (err:any) {
+        console.log('All installs ', err)
+        return res.status(500).json({err: 'error fetching all installs ', error:err})
+    }
+}
+
 export const add_inspection = async(req: CustomRequest, res: Response)=>{
 
     const {inspection_date, inspection_document, inspection_status} = req.body

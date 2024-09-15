@@ -15,6 +15,36 @@ export const main_installer_dashboard = async(req: CustomRequest, res: Response,
     }
 }
 
+export const all_projects = async(req: CustomRequest, res: Response)=>{
+    try {
+        const projects = await prisma.project.findMany({
+            where: {
+                install: {
+                    none: {}
+                }
+            },
+            include: {
+                job: {select: {
+                    job_ind: true,
+                    job_number: true,
+                    lead: {
+                        select: {
+                            customer_first_name: true, customer_last_name: true
+                        }
+                    }
+                }}
+            }
+        })
+
+        return res.status(200).json({
+            msg: 'All Projects',
+            projects: projects
+        })
+    } catch (err:any) {
+        console.log('Error fetching all projects', err);
+        return res.status(500).json({err:'Error fetching all projects', error:err});
+    }
+}
 
 export const add_project_installs = async(req: CustomRequest, res: Response)=>{
     try {
@@ -323,29 +353,33 @@ export const edit_install_material = async(req: CustomRequest, res: Response)=>{
     }
 }
 
-export const all_paginated_installable_projects = async(req: CustomRequest, res: Response)=>{
+export const all_paginated_installs = async(req: CustomRequest, res: Response)=>{
     try {
         const user_id = req.user.user_id
 
         const {page_number} = req.params
 
-        const [number_of_projects, projects ] = await Promise.all([
+        const [number_of_installs, installs ] = await Promise.all([
 
-            prisma.project.count({
-                
-            }),
+            prisma.install.count({}),
 
-            prisma.project.findMany({
+            prisma.install.findMany({
                 include: {
-                    install: true,
-                    job: {
+                    project: {
                         select: {
-                            job_ind: true, job_id:true, job_number: true,
-                            lead: {
-                                select: {customer_first_name: true, customer_last_name: true, desired_structure: true,  }
-                            }
+                            project_id: true, project_ind: true, 
+                            job: {select: {
+                                job_ind: true,
+                                job_number: true,
+                                lead: {
+                                    select: {
+                                        customer_first_name: true, customer_last_name: true
+                                    }
+                                }
+                            }}
                         }
-                    }
+                    },
+
                 },
 
                 skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
@@ -353,13 +387,13 @@ export const all_paginated_installable_projects = async(req: CustomRequest, res:
 
         ])
         
-        const number_of_project_pages = (number_of_projects <= 15) ? 1 : Math.ceil(number_of_projects / 15)
+        const number_of_install_pages = (number_of_installs <= 15) ? 1 : Math.ceil(number_of_installs / 15)
 
-        return res.status(200).json({ total_number_of_projects: number_of_projects, total_number_of_pages: number_of_project_pages, projects })
+        return res.status(200).json({ total_number_of_installs: number_of_installs, total_number_of_pages: number_of_install_pages, installs })
 
     } catch (err:any) {
-        console.log('Error occured while fetching all installable project ',err);
-        return res.status(500).json({err:'Error occured while fetching all installable project ',error:err});
+        console.log('Error occured while fetching all project installs ',err);
+        return res.status(500).json({err:'Error occured while fetching all project installs ',error:err});
     }
 }
 
