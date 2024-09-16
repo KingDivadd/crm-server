@@ -264,7 +264,11 @@ export const all_paginated_inspection = async(req: CustomRequest, res: Response)
             prisma.inspection.count({ }),
 
             prisma.inspection.findMany({
-                include: {install: true},
+                include: {
+                    install: true, inspector: {select: {
+                    user_id: true, user_ind: true, user_role: true, first_name: true, last_name: true
+                }}
+            },
                 skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc' } 
             }),
 
@@ -287,7 +291,13 @@ export const all_paginated_inspection = async(req: CustomRequest, res: Response)
 export const all_installs = async(req: CustomRequest, res: Response)=>{
     try {
         const installs = await prisma.install.findMany({
+            where: {
+                inspections: {
+                    none: {}
+                }
+            },
             orderBy: {created_at: 'desc'}
+
         })
 
         return res.status(200).json({
@@ -307,7 +317,7 @@ export const add_inspection = async(req: CustomRequest, res: Response)=>{
     try {
         const {install_id} = req.params
 
-        const [install_exist, last_tracking, last_notification, last_inspection] = await Promise.all([
+        const [ install_exist, last_tracking, last_notification, last_inspection] = await Promise.all([
             prisma.install.findFirst({where: {install_id}, select: {install_ind: true}}),
             prisma.user_Tracking.findFirst({orderBy: {created_at: 'desc'}, select: {tracking_ind: true}}),
             prisma.notification.findFirst({orderBy: {created_at: 'desc'}, select: {notification_ind: true}}),
@@ -333,7 +343,7 @@ export const add_inspection = async(req: CustomRequest, res: Response)=>{
 
         const new_inspection = await prisma.inspection.create({
             data: {
-                inspection_ind: new_inspection_number,
+                inspection_ind: new_inspectiong_ind,
                 ...req.body,
                 created_at: converted_datetime(), updated_at: converted_datetime()
             }
@@ -443,7 +453,7 @@ export const edit_inspection = async(req: CustomRequest, res: Response)=>{
         ])
 
         return res.status(200).json({
-            msg: 'Inspection created successfully',
+            msg: 'Inspection updated successfully',
             inspection: update_inspection
         })
 

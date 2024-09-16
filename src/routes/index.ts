@@ -164,7 +164,7 @@ router.route('/all-paginated-inspection/:page_number').get(verify_auth_id, all_p
 
 router.route('/all-installs').get(verify_auth_id, all_installs)
 
-router.route('/add-inspection/:install_id').patch(verify_auth_id, inspection_validation, add_inspection )
+router.route('/add-inspection/:install_id').post(verify_auth_id, inspection_validation, add_inspection )
 
 router.route('/edit-inspection/:inspection_id').patch(verify_auth_id, inspection_validation, edit_inspection )
 

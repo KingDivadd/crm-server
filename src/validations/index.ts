@@ -561,27 +561,27 @@ export const inspection_validation = async (req: Request, res: Response, next: N
         const schema = Joi.object({
             
             footing_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
-            footing_inspection_comments: Joi.string().trim().optional(),
+            footing_inspection_comments: Joi.string().trim().allow('').optional(),
             footing_inspection_date: Joi.number().optional(),
             
             set_post_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
-            set_post_inspection_comments: Joi.string().trim().optional(),
+            set_post_inspection_comments: Joi.string().trim().allow('').optional(),
             set_post_inspection_date: Joi.number().optional(),
 
             demo_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
-            demo_inspection_comments: Joi.string().trim().optional(),
+            demo_inspection_comments: Joi.string().trim().allow('').optional(),
             demo_inspection_date: Joi.number().optional(),
 
             install_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
-            install_inspection_comments: Joi.string().trim().optional(),
+            install_inspection_comments: Joi.string().trim().allow('').optional(),
             install_inspection_date: Joi.number().optional(),
 
             electrical_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
-            electrical_inspection_comments: Joi.string().trim().optional(),
+            electrical_inspection_comments: Joi.string().trim().allow('').optional(),
             electrical_inspection_date: Joi.number().optional(),
 
             final_inspection_status: Joi.string().trim().valid("pending",'pass', 'fail', 'n_a').required(),
-            final_inspection_comments: Joi.string().trim().optional(),
+            final_inspection_comments: Joi.string().trim().allow('').optional(),
             final_inspection_date: Joi.number().optional(),
             
         })
