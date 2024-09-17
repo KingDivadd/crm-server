@@ -453,7 +453,7 @@ export const edit_inspection = async(req: CustomRequest, res: Response)=>{
         ])
 
         return res.status(200).json({
-            msg: 'Inspection updated successfully',
+            msg: 'Inspection updatednpm  successfully.',
             inspection: update_inspection
         })
 
