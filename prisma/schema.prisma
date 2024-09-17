@@ -121,6 +121,7 @@ model Lead {
   contract_document                       Json?            @default("[]")
 
   deleted                                 Boolean         @default(false)
+  lead_source                             String?
 
   job                                     Job[]
   notification                            Notification[]

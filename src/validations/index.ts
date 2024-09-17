@@ -315,8 +315,9 @@ export const lead_validation = async (req: Request, res: Response, next: NextFun
                 then: Joi.string().trim().email().required(),
                 otherwise: Joi.string().allow('').optional()
             }),
-
             gate_code: Joi.string().trim().allow('').optional(),
+            lead_source: Joi.string().trim().allow('').optional(),
+
             appointment_date: Joi.string().trim().required(),
             desired_structure: Joi.string().trim().allow('').optional(),
             contract_document: Joi.array().items(Joi.string().trim().optional()).optional(),

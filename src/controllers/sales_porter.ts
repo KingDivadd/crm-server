@@ -68,7 +68,8 @@ export const all_paginated_leads = async(req: CustomRequest, res: Response)=>{
 
         const {page_number} = req.params
 
-        const lead_display_condition = (user_role == 'designer') ? {lead_designer_id: user_id} : {}
+        const lead_display_condition = (user_role == 'designer') ? {lead_designer_id: user_id, deleted: false} : {deleted:false}
+
         const [number_of_leads, leads ] = await Promise.all([
 
             prisma.lead.count({ where: lead_display_condition }),
