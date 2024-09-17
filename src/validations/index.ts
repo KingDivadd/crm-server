@@ -393,7 +393,7 @@ export const job_validation = async (req: Request, res: Response, next: NextFunc
             general_permit_document:Joi.array().items(Joi.string().trim().optional()).optional(),
             
             // below are project info
-            attached: Joi.string().trim().allow('').optional(),
+            attached: Joi.string().trim().valid('attached', 'freestanding', 'cantilever').required(),
             structure_type: Joi.string().trim().allow('').optional(),
             cover_size: Joi.string().trim().allow('').optional(),
             end_cap_style: Joi.string().trim().allow('').optional(),
