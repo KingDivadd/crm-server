@@ -72,8 +72,8 @@ model User {
   redLine_assigner                        RedLine[]        @relation("redLine_assigner_ref")
   redLine_assignee                        RedLine[]        @relation("redLine_assignee_ref")
   employee                                Payroll[]        @relation("employee_ref")
-  inspector                               Inspection[]        @relation("inspector_ref")
-
+  inspector                               Inspection[]     @relation("inspector_ref")
+  tasks                                   Task[]
 
   created_at                              Decimal
   updated_at                              Decimal
@@ -177,6 +177,7 @@ model Job {
   accounting                              Accounting[]
   user_tracking                           User_Tracking[]
   payroll                                 Payroll[]
+  tasks                                   Task[]
 
   deleted                                 Boolean         @default(false)
 
@@ -233,6 +234,42 @@ model Project {
   created_at                              Decimal
   updated_at                              Decimal
 }
+
+model Task {
+  task_id                                 String      @id @default(uuid()) @unique
+  task_ind                                String
+  task_title                              String      
+  task_description                        String?
+  required_action                         String?
+  status                                  TaskStatus  @default(pending) // Status of the task
+  due_date                                Decimal?   
+  priority                                TaskPriority? 
+  comments                                String? 
+  
+  job                                     Job         @relation(fields: [job_id], references: [job_id])
+  job_id                                  String
+
+  task_assignee                           User        @relation(fields: [task_assignee_id], references: [user_id])
+  task_assignee_id                        String      
+
+  created_at                              Decimal     // Creation timestamp
+  updated_at                              Decimal     // Update timestamp
+}
+
+enum TaskStatus {
+  pending
+  in_progress
+  completed
+  cancelled
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+}
+
+
 
 model Install {
   install_id                              String           @id @default(uuid()) @unique

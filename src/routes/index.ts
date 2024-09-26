@@ -3,7 +3,7 @@ import express from 'express'
 
 import {main_electrical_dashboard, project_invoice_upload, project_photo_upload} from "../controllers/electrical_porter"
 import {add_inspection, all_installs, all_paginated_inspection, all_paginated_job_permits, create_new_redline, edit_inspection, edit_redline, main_permit_dashboard} from "../controllers/permit_porter"
-import {close_rfi, create_rfi, edit_rfi, main_engineering_dashboard } from '../controllers/engineering_porter'
+import {all_paginated_task, close_rfi, create_rfi, edit_rfi, main_engineering_dashboard } from '../controllers/engineering_porter'
 import { main_designer_dashboard,} from '../controllers/designer_porter'
 import { create_new_invoice, edit_invoice, main_accounting_dashboard} from '../controllers/accounting_porter'
 import {all_paginated_invoice, all_paginated_payments, create_service_ticket, customer_main_dashbaord, edit_service_ticket, make_new_payment} from '../controllers/customer_porter'
@@ -149,6 +149,8 @@ router.route('/create-rfi').post(verify_auth_id, rfi_validation, create_rfi)
 router.route('/edit-rfi/:rfi_id').patch(verify_auth_id, rfi_validation, edit_rfi)
 
 router.route('/close-rfi/:rfi_id').patch(verify_auth_id, close_rfi )
+
+router.route('/all-paginated-task/:page_number').get(verify_auth_id, all_paginated_task )
 
 // Permit Porter
 

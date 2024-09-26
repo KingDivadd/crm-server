@@ -270,3 +270,44 @@ export const close_rfi = async(req: CustomRequest, res: Response)=>{
 }
 
 
+export const all_paginated_task = async (req: CustomRequest, res: Response, next: NextFunction) => {
+    try {
+
+        const user_id = req.user.user_id
+
+        const {page_number} = req.params
+
+        const [number_of_tasks, tasks ] = await Promise.all([
+
+            prisma.task.count({}),
+
+            prisma.task.findMany({
+                include: {job: {
+                    include: {
+                        job_adder: {
+                            select: {last_name: true, first_name: true, user_ind: true}
+                        },
+                        lead: {
+                            select: {
+                                lead_ind: true, customer_first_name: true, customer_last_name: true, 
+                                customer_address: true, customer_email: true, customer_phone: true,
+                            }
+                        }
+                    }
+                }},
+
+                skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
+            }),
+
+        ])
+        
+        const number_of_task_pages = (number_of_tasks <= 15) ? 1 : Math.ceil(number_of_tasks / 15)
+
+        return res.status(200).json({ total_number_of_tasks: number_of_tasks, total_number_of_pages: number_of_task_pages, tasks })
+
+
+    } catch (err: any) {
+        console.error('Error creating tasks for jobs: ', err);
+        return res.status(500).json({ err: 'Error creating tasks for jobs ', error: err });
+    }
+};
