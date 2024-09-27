@@ -954,3 +954,50 @@ export const send_lead_not_sold_email = (user: any) => {
     });
 };
 
+// Email for when the engineering personnel has uplaod the engineering drawing for submitssion for permit
+export const send_engineering_drawing_uploaded_email = (user: any) => {
+    const html_content = `
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Engineering Drawing Uploaded</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 0; }
+                .container { max-width: 600px; margin: 20px auto; padding: 20px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); }
+                h1 { color: #333; }
+                p { color: #555; line-height: 1.6; }
+                a { color: #0066cc; text-decoration: none; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Hi ${user.first_name}, Your Engineering Drawing is Ready for Permit Submission!</h1>
+                <p>We are pleased to inform you that the engineering drawing for your project has been successfully uploaded by our team.</p>
+                <p>You can now proceed to submit the drawing for the necessary permits.</p>
+                <p>If you need assistance with the submission process or have any questions, feel free to reach out to us at <a href="mailto:support@crmwebapp.com">support@crmwebapp.com</a>.</p>
+                <p>Thank you for choosing our services!</p>
+                <p>Best regards,</p>
+                <p>The CRM Web App Team</p>
+            </div>
+        </body>
+        </html>
+    `;
+
+    const mail_options = {
+        from: { name: "CRM", address: 'iroegbu.dg@gmail.com' },
+        to: user.email,
+        subject: "Engineering Drawing Ready for Permit Submission",
+        html: html_content,
+        text: 'Your Engineering Drawing is Ready for Permit Submission!',
+    };
+
+    transporter.sendMail(mail_options, function(error, info) {
+        if (error) {
+            console.log(error);
+        } else {
+            console.log(`Engineering drawing upload email sent to ${user.email}`.cyan.bold);
+        }
+    });
+};

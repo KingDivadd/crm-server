@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import prisma from '../helpers/prisma'
 import { CustomRequest } from '../helpers/interface'
 import converted_datetime from '../helpers/date_time_elemets'
+import { send_engineering_drawing_uploaded_email } from '../helpers/email'
 
 
 export const main_engineering_dashboard = async(req: CustomRequest, res: Response)=>{
@@ -282,27 +283,32 @@ export const all_paginated_task = async (req: CustomRequest, res: Response, next
             prisma.task.count({}),
 
             prisma.task.findMany({
-                include: {job: {
-                    include: {
-                        job_adder: {
-                            select: {last_name: true, first_name: true, user_ind: true}
-                        },
-                        lead: {
-                            select: {
-                                lead_ind: true, customer_first_name: true, customer_last_name: true, 
-                                customer_address: true, customer_email: true, customer_phone: true,
+                include: {
+                    job: {
+                        include: {
+                            project: {
+                                take: 1
+                            },
+                            job_adder: {
+                                select: {last_name: true, first_name: true, user_ind: true}
+                            },
+                            lead: {
+                                select: {
+                                    lead_ind: true, customer_first_name: true, customer_last_name: true, 
+                                    customer_address: true, customer_email: true, customer_phone: true,
+                                }
                             }
                         }
                     }
-                }},
+                },
 
-                skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
-            }),
+                    skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
+                }),
 
         ])
         
         const number_of_task_pages = (number_of_tasks <= 15) ? 1 : Math.ceil(number_of_tasks / 15)
-
+        
         return res.status(200).json({ total_number_of_tasks: number_of_tasks, total_number_of_pages: number_of_task_pages, tasks })
 
 
@@ -311,3 +317,73 @@ export const all_paginated_task = async (req: CustomRequest, res: Response, next
         return res.status(500).json({ err: 'Error creating tasks for jobs ', error: err });
     }
 };
+
+export const upload_engineering_drawing = async(req: CustomRequest, res: Response, next: NextFunction)=>{
+    const {job_id, comments, engineering_drawing_upload}  = req.body
+    try {
+
+        const {task_id}  = req.params
+
+        const [task_exist, job_exist] = await Promise.all([
+            prisma.task.findFirst({ where: {task_id }}),
+            prisma.job.findFirst({ 
+                where: {job_id }, 
+
+                include: {
+                    project: {take: 1},
+                    lead: {
+                        select: {customer_email: true, customer_first_name: true, customer_last_name: true}
+                    }
+                } 
+            })
+
+        ])  
+
+        if (!task_exist) { return res.status(404).json({err: 'Invalid task id'}) }
+
+        if (!job_exist) { return res.status(404).json({err: 'Invalid job id'}) }
+
+
+        const [update_task, update_project] = await Promise.all([
+            prisma.task.update({
+                where: {task_id: task_exist.task_id},
+                data: {
+                    comments: comments,
+                    updated_at: converted_datetime()
+                }
+            }),
+
+            prisma.project.update({
+                where: {project_id: job_exist?.project[0].project_id},
+                data: {
+                    engineering_drawing_upload,
+                    updated_at: converted_datetime()
+                }
+            })
+        ])
+
+        if (!update_task || !update_project) {
+            return res.status(400).json({err: 'Engineering upload failded'})
+        }
+
+        const customer_info = {
+            first_name: job_exist.lead.customer_first_name, 
+            last_name: job_exist.lead.customer_last_name,  
+            email: job_exist.lead.customer_email,  
+        }
+
+        send_engineering_drawing_uploaded_email(customer_info)
+
+        return res.status(200).json({
+            msg: 'Engineering Drawing Uploaded Successfully',
+            task: update_task,
+            project: update_project
+        })
+
+
+        
+    } catch (err:any) {
+        console.log('Error upload job engineering drawing ', err);
+        return res.status(500).json({err:'Error upload job engineering drawing ', error:err});
+    }
+}

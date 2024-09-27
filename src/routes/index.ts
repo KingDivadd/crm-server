@@ -3,7 +3,7 @@ import express from 'express'
 
 import {main_electrical_dashboard, project_invoice_upload, project_photo_upload} from "../controllers/electrical_porter"
 import {add_inspection, all_installs, all_paginated_inspection, all_paginated_job_permits, create_new_redline, edit_inspection, edit_redline, main_permit_dashboard} from "../controllers/permit_porter"
-import {all_paginated_task, close_rfi, create_rfi, edit_rfi, main_engineering_dashboard } from '../controllers/engineering_porter'
+import {all_paginated_task, close_rfi, create_rfi, edit_rfi, main_engineering_dashboard, upload_engineering_drawing } from '../controllers/engineering_porter'
 import { main_designer_dashboard,} from '../controllers/designer_porter'
 import { create_new_invoice, edit_invoice, main_accounting_dashboard} from '../controllers/accounting_porter'
 import {all_paginated_invoice, all_paginated_payments, create_service_ticket, customer_main_dashbaord, edit_service_ticket, make_new_payment} from '../controllers/customer_porter'
@@ -11,7 +11,7 @@ import { add_install_material, add_project_installs, all_paginated_installs, all
 import {all_notification, get_settings_information, update_notification, update_settings_information} from "../controllers/general"
 import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
 import { admin_complete_signup, admin_signup, app_user_exist, generate_user_otp, resend_otp, reset_password, signup_generate_user_otp, user_login, logged_in_user, verify_user_otp } from '../controllers/authentication'
-import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation, project_photo_validation, project_invoice_validation, project_job_description_validation, lead_contract_validation, inspection_validation,  } from '../validations'
+import { admin_edit_user_validation, admin_setup_validation, admin_signup_validation, job_validation, create_user_validation, lead_validation, login_validation, reset_password_validation, update_settings_validation, edit_project_validation, install_validation, material_validation, payment_validation, invoice_validation, service_ticket_validation, rfi_validation, red_line_validation, project_photo_validation, project_invoice_validation, project_job_description_validation, lead_contract_validation, inspection_validation, upload_engineering_validation,  } from '../validations'
 import { add_new_user, admin_main_dashboard, all_lead_assigners, all_paginated_users, delete_user, edit_user_data } from '../controllers/admin_porter'
 import { add_new_lead, all_lead, all_paginated_jobs, all_paginated_leads, all_paginated_projects, all_paginated_service_ticket, all_paginated_staff_pipeline, all_sales_user, assign_service_ticket, create_new_job, delete_job, delete_lead, edit_job, edit_lead, edit_lead_contract_document, edit_project, main_sales_dashboard } from '../controllers/sales_porter'
 
@@ -151,6 +151,8 @@ router.route('/edit-rfi/:rfi_id').patch(verify_auth_id, rfi_validation, edit_rfi
 router.route('/close-rfi/:rfi_id').patch(verify_auth_id, close_rfi )
 
 router.route('/all-paginated-task/:page_number').get(verify_auth_id, all_paginated_task )
+
+router.route('/upload-engineering-drawing/:task_id').patch(verify_auth_id, upload_engineering_validation, upload_engineering_drawing)
 
 // Permit Porter
 

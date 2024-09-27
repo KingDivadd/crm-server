@@ -840,3 +840,25 @@ export const create_inspection_validation = async (req: Request, res: Response, 
         return res.status(422).json({ err: 'Error occured while validating creating inspection data ',error })
     }
 }
+
+export const upload_engineering_validation = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const schema = Joi.object({
+            job_id: Joi.string().trim().required(),
+            engineering_drawing_upload: Joi.array().items(Joi.string()).required(),
+            comments: Joi.string().trim().allow('').optional(),
+            
+        })
+
+        const { error: validation_error } = schema.validate(req.body)
+
+        if (validation_error) {
+            const error_message = validation_error.message.replace(/"/g, '');
+            return res.status(400).json({ err: error_message });
+        }
+
+        return next()
+    } catch (error) {
+        return res.status(422).json({ err: 'Error occured while updating engineering drawing for jobs',error })
+    }
+}
