@@ -688,7 +688,7 @@ export const create_new_job = async(req: CustomRequest, res: Response)=>{
     try {
         const logged_in_user = req.user
 
-        const [lead, last_job, last_tracking, last_notification, last_project] = await Promise.all([
+        const [lead, last_job, last_tracking, last_notification, last_project, last_task] = await Promise.all([
             prisma.lead.findFirst({
                 where: {lead_id: job_box.lead_id}, 
                 select: {
@@ -700,7 +700,8 @@ export const create_new_job = async(req: CustomRequest, res: Response)=>{
             prisma.job.findFirst({ orderBy: {created_at: 'desc'}, select: {job_ind: true, job_id: true}}),
             prisma.user_Tracking.findFirst({ orderBy: {created_at: 'desc'}, select: {tracking_ind: true} }),
             prisma.notification.findFirst({orderBy:{created_at: 'desc'}, select: {notification_ind: true}}),
-            prisma.project.findFirst({orderBy:{created_at: 'desc'}, select: {project_ind: true}})
+            prisma.project.findFirst({orderBy:{created_at: 'desc'}, select: {project_ind: true}}),
+            prisma.task.findFirst({orderBy:{created_at: 'desc'}, select: {task_ind: true}}),
         ])
 
         if (!lead) { return res.status(404).json({err: 'Selected lead not found'}) }
@@ -721,6 +722,10 @@ export const create_new_job = async(req: CustomRequest, res: Response)=>{
         const new_project_number = last_project_number + 1;
         const new_project_ind = `PJ${new_project_number.toString().padStart(4, '0')}`;
 
+        const last_task_number = last_task ? parseInt(last_task.task_ind.slice(2)) : 0;
+        const new_task_number = last_task_number + 1;
+        const new_task_ind = `TS${new_task_number.toString().padStart(4, '0')}`;
+
         job_box.email = lead?.customer_email
 
         const new_job = await prisma.job.create({
@@ -735,7 +740,7 @@ export const create_new_job = async(req: CustomRequest, res: Response)=>{
 
         if (!new_job) { return res.status(500).json({err: 'Unable to create job, contact dev. '}) }
 
-        const [project, tracking, notification] = await Promise.all([
+        const [project, task, tracking, notification] = await Promise.all([
             prisma.project.create({
                 data: {
                     project_ind: new_project_ind,
@@ -743,6 +748,17 @@ export const create_new_job = async(req: CustomRequest, res: Response)=>{
                     attached, structure_type, cover_size, end_cap_style, cover_color, trim_color, paperwork_upload, photo_upload,
 
                     updated_at: converted_datetime(), created_at: converted_datetime()
+                }
+            }),
+            prisma.task.create({
+                data: {
+                    task_ind: new_task_ind,
+                    task_title: `Task for Job ${new_job.job_ind}`,
+                    required_action: 'Upload Engineering Drawing',
+                    comments: '', 
+                    job_id: new_job.job_id,
+                    task_assignee_id: '20f8ebcc-025e-41e7-8258-b9c9e1eab532' ,
+                    created_at: converted_datetime(), updated_at: converted_datetime()
                 }
             }),
             prisma.user_Tracking.create({
