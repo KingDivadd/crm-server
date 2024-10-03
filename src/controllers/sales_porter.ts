@@ -642,10 +642,56 @@ export const all_paginated_jobs = async(req: CustomRequest, res: Response)=>{
 
 export const all_paginated_projects = async(req: CustomRequest, res: Response)=>{
     try {
-        const user_id = req.user.user_id
+        const user_id = req.user.user_id; 
+        const user_role = req.user.user_role;
+        const email = req.user.email
 
         const {page_number} = req.params
 
+        if (user_role == 'customer') {
+            const [number_of_projects, projects ] = await Promise.all([
+
+                prisma.project.count({
+                    where: {
+                        job: {
+                            lead: {
+                                customer_email : email
+                            }
+                        }
+                    }
+                }),
+    
+                prisma.project.findMany({
+                    where: {
+                        job: {
+                            lead: {
+                                customer_email: email
+                            }
+                        }
+                    },
+                    include: {job: {
+                        include: {
+                            job_adder: {
+                                select: {last_name: true, first_name: true, user_ind: true}
+                            },
+                            lead: {
+                                select: {
+                                    lead_ind: true, customer_first_name: true, customer_last_name: true, 
+                                    customer_address: true, customer_email: true, customer_phone: true,
+                                }
+                            }
+                        }
+                    }},
+    
+                    skip: (Math.abs(Number(page_number)) - 1) * 15, take: 15, orderBy: { created_at: 'desc'  } 
+                }),
+    
+            ])
+            
+            const number_of_project_pages = (number_of_projects <= 15) ? 1 : Math.ceil(number_of_projects / 15)
+
+            return res.status(200).json({ total_number_of_projects: number_of_projects, total_number_of_pages: number_of_project_pages, projects })
+        }
         const [number_of_projects, projects ] = await Promise.all([
 
             prisma.project.count({}),

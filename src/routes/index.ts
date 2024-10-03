@@ -149,7 +149,7 @@ router.route('/create-rfi').post(verify_auth_id, rfi_validation, create_rfi)
 router.route('/edit-rfi/:rfi_id').patch(verify_auth_id, rfi_validation, edit_rfi)
 
 router.route('/close-rfi/:rfi_id').patch(verify_auth_id, close_rfi )
-
+    
 router.route('/all-paginated-task/:page_number').get(verify_auth_id, all_paginated_task )
 
 router.route('/upload-engineering-drawing/:task_id').patch(verify_auth_id, upload_engineering_validation, upload_engineering_drawing)
