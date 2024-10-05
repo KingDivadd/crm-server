@@ -6,7 +6,7 @@ import {add_inspection, all_installs, all_paginated_inspection, all_paginated_jo
 import {all_paginated_task, close_rfi, create_rfi, edit_rfi, main_engineering_dashboard, upload_engineering_drawing } from '../controllers/engineering_porter'
 import { main_designer_dashboard,} from '../controllers/designer_porter'
 import { create_new_invoice, edit_invoice, main_accounting_dashboard} from '../controllers/accounting_porter'
-import {all_paginated_invoice, all_paginated_payments, create_service_ticket, customer_main_dashbaord, edit_service_ticket, make_new_payment} from '../controllers/customer_porter'
+import {all_customer_projects, all_paginated_invoice, all_paginated_payments, create_service_ticket, customer_main_dashbaord, edit_service_ticket, make_new_payment} from '../controllers/customer_porter'
 import { add_install_material, add_project_installs, all_paginated_installs, all_projects, edit_install_material, edit_project_installs, main_installer_dashboard} from "../controllers/installer_porter"
 import {all_notification, get_settings_information, update_notification, update_settings_information} from "../controllers/general"
 import { email_exist, verify_auth_id, verify_otp } from '../helpers/auth_helper'
@@ -138,6 +138,8 @@ router.route('/all-paginated-payment').get(verify_auth_id, all_paginated_payment
 router.route('/create-service-ticket/:project_id').post(verify_auth_id, service_ticket_validation, create_service_ticket )
 
 router.route('/edit-service-ticket/:ticket_id/:project_id').post(verify_auth_id, service_ticket_validation, edit_service_ticket )
+
+router.route('/customer-project').get(verify_auth_id, all_customer_projects)
 
 
 // Engineering Porter

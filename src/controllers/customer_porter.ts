@@ -235,3 +235,35 @@ export const create_service_ticket = async(req: CustomRequest, res: Response)=>{
         return res.status(500).json({err:'Error occured while creating service ticket ', error:err});
     }
 }
+
+export const all_customer_projects = async(req: CustomRequest, res: Response)=>{
+    try {
+        const user_id = req.user.user_id; 
+        const email = req.user.email
+
+
+        const projects  = await prisma.project.findMany({
+
+            where: {
+                job: {
+                    lead: {
+                        customer_email: email
+                    }
+                }
+            },
+            select: {
+                project_id: true, project_ind: true,
+                
+
+            },
+            
+            orderBy: { created_at: 'desc'  } 
+        })
+        
+        return res.status(200).json({ msg: 'Customer Projects', projects: projects })
+
+    } catch (err:any) {
+        console.log('Error occured while fetching all projects ',err);
+        return res.status(500).json({err:'Error occured while fetching all projects ',error:err});
+    }
+}
